@@ -22,7 +22,7 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
-        if user and user.password == form.password.data:
+        if user and user.check_password(form.password.data):
             login_user(user, remember=form.remember.data)
             return redirect(url_for('dashboard'))
         else:
@@ -41,8 +41,8 @@ def add_user():
     form = AddUserForm()
     if form.validate_on_submit():
         hashed_password = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
-        user = User(username=form.username.data, password=hashed_password, 
-                    start_date=form.start_date.data, birth_date=form.birth_date.data)
+        user = User(username=form.username.data, birth_date=form.birth_date.data, start_date=form.start_date.data)
+        user.set_password(hashed_password)
         db.session.add(user)
         db.session.commit()
         flash(f'User {form.username.data} added with password {hashed_password}', 'success')
