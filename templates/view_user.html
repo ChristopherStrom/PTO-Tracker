@@ -9,7 +9,15 @@
     <a href="{{ url_for('add_time_off', user_id=user.id) }}">Add Time Off</a>
     <ul>
         {% for time_off in user.time_off %}
-            <li>{{ time_off.date }} - {{ time_off.hours }} hours - {{ time_off.reason }}</li>
+            <li>{{ time_off.date }} - {{ time_off.hours }} hours - 
+                {% if time_off.reason == 'pto' %}
+                    PTO
+                {% elif time_off.reason == 'emergency' %}
+                    Emergency
+                {% elif time_off.reason == 'vacation' %}
+                    Vacation
+                {% endif %}
+            </li>
         {% endfor %}
     </ul>
 {% endblock %}
