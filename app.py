@@ -98,6 +98,28 @@ def add_time(user_id):
         return redirect(url_for('view_user', user_id=user.id))
     return render_template('add_time.html', form=form, user=user)
 
+@app.route('/add_time_off/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def add_time_off(user_id):
+    form = TimeOffForm()
+    user = User.query.get_or_404(user_id)
+    if form.validate_on_submit():
+        time_off = TimeOff(date=form.date.data, hours=form.hours.data, reason=form.reason.data, user_id=user_id)
+        db.session.add(time_off)
+
+        if form.reason.data == 'pto':
+            user.pto_hours += form.hours.data
+        elif form.reason.data == 'emergency':
+            user.emergency_hours += form.hours.data
+        elif form.reason.data == 'vacation':
+            user.vacation_hours += form.hours.data
+
+        db.session.commit()
+        flash('Time off added successfully', 'success')
+        return redirect(url_for('view_user', user_id=user_id))
+    return render_template('add_time_off.html', form=form, user=user)
+
+
 @app.route('/logout')
 def logout():
     logout_user()
