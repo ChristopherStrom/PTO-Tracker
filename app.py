@@ -86,17 +86,24 @@ def add_time(user_id):
     form = AddTimeForm()
     user = User.query.get_or_404(user_id)
     if form.validate_on_submit():
+        old_value = 0
         if form.category.data == 'pto':
+            old_value = user.pto_hours
             user.pto_hours += form.hours.data
         elif form.category.data == 'emergency':
+            old_value = user.emergency_hours
             user.emergency_hours += form.hours.data
         elif form.category.data == 'vacation':
+            old_value = user.vacation_hours
             user.vacation_hours += form.hours.data
         
+        bucket_change = BucketChange(category=form.category.data, old_value=old_value, new_value=old_value + form.hours.data, user_id=user.id)
+        db.session.add(bucket_change)
         db.session.commit()
         flash(f'Successfully added {form.hours.data} hours to {form.category.data} for {user.username}', 'success')
         return redirect(url_for('view_user', user_id=user.id))
     return render_template('add_time.html', form=form, user=user)
+
 
 @app.route('/add_time_off/<int:user_id>', methods=['GET', 'POST'])
 @login_required
