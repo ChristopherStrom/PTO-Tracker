@@ -1,9 +1,10 @@
 from flask import Flask, render_template, url_for, flash, redirect, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user, login_required
+from flask_migrate import Migrate
 from config import Config
 from models import db, login_manager, User, TimeOff, BucketChange
-from forms import LoginForm, AddUserForm, TimeOffForm, AddTimeForm, EditBucketForm  # Ensure EditBucketForm is imported
+from forms import LoginForm, AddUserForm, TimeOffForm, AddTimeForm, EditBucketForm
 from datetime import datetime, timedelta
 import random
 import string
@@ -13,6 +14,7 @@ app.config.from_object(Config)
 
 db.init_app(app)
 login_manager.init_app(app)
+migrate = Migrate(app, db)
 
 @app.route('/')
 @app.route('/login', methods=['GET', 'POST'])
