@@ -48,6 +48,7 @@
                 <th>Date</th>
                 <th>Hours</th>
                 <th>Reason</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -64,6 +65,11 @@
                             Vacation
                         {% endif %}
                     </td>
+                    <td>
+                        <form method="POST" action="{{ url_for('delete_time_off', time_off_id=time_off.id) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>
@@ -76,6 +82,7 @@
                 <th>Category</th>
                 <th>Old Value</th>
                 <th>New Value</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -85,6 +92,11 @@
                     <td>{{ change.category }}</td>
                     <td>{{ change.old_value }}</td>
                     <td>{{ change.new_value }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('delete_bucket_change', bucket_change_id=change.id) }}" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>
