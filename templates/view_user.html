@@ -1,24 +1,44 @@
 {% extends "base.html" %}
 {% block content %}
-    <h1>{{ user.username }}</h1>
-    <p>Start Date: {{ user.start_date }}</p>
-    <p>Birth Date: {{ user.birth_date }}</p>
-    <p>PTO Hours: {{ user.pto_hours }}</p>
-    <p>Emergency Hours: {{ user.emergency_hours }}</p>
-    <p>Vacation Hours: {{ user.vacation_hours }}</p>
-    <a href="{{ url_for('add_time_off', user_id=user.id) }}">Add Time Off</a>
-    <a href="{{ url_for('add_time', user_id=user.id) }}">Add Time to Buckets</a>
-    <ul>
-        {% for time_off in user.time_off %}
-            <li>{{ time_off.date }} - {{ time_off.hours }} hours - 
-                {% if time_off.reason == 'pto' %}
-                    PTO
-                {% elif time_off.reason == 'emergency' %}
-                    Emergency
-                {% elif time_off.reason == 'vacation' %}
-                    Vacation
-                {% endif %}
-            </li>
-        {% endfor %}
-    </ul>
+    <div class="row">
+        <div class="col-md-8">
+            <h2>{{ user.username }}</h2>
+            <ul class="list-group mb-3">
+                <li class="list-group-item"><strong>Start Date:</strong> {{ user.start_date }}</li>
+                <li class="list-group-item"><strong>Birth Date:</strong> {{ user.birth_date }}</li>
+                <li class="list-group-item"><strong>PTO Hours:</strong> {{ user.pto_hours }}</li>
+                <li class="list-group-item"><strong>Emergency Hours:</strong> {{ user.emergency_hours }}</li>
+                <li class="list-group-item"><strong>Vacation Hours:</strong> {{ user.vacation_hours }}</li>
+            </ul>
+            <a href="{{ url_for('add_time_off', user_id=user.id) }}" class="btn btn-warning">Add Time Off</a>
+            <a href="{{ url_for('add_time', user_id=user.id) }}" class="btn btn-success">Add Time to Buckets</a>
+        </div>
+    </div>
+    <h3 class="mt-4">Time Off History</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Hours</th>
+                <th>Reason</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for time_off in user.time_off %}
+                <tr>
+                    <td>{{ time_off.date }}</td>
+                    <td>{{ time_off.hours }}</td>
+                    <td>
+                        {% if time_off.reason == 'pto' %}
+                            PTO
+                        {% elif time_off.reason == 'emergency' %}
+                            Emergency
+                        {% elif time_off.reason == 'vacation' %}
+                            Vacation
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 {% endblock %}
