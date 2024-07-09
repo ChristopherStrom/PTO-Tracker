@@ -87,17 +87,21 @@ def add_time(user_id):
     user = User.query.get_or_404(user_id)
     if form.validate_on_submit():
         old_value = 0
+        new_value = 0
         if form.category.data == 'pto':
             old_value = user.pto_hours
             user.pto_hours += form.hours.data
+            new_value = user.pto_hours
         elif form.category.data == 'emergency':
             old_value = user.emergency_hours
             user.emergency_hours += form.hours.data
+            new_value = user.emergency_hours
         elif form.category.data == 'vacation':
             old_value = user.vacation_hours
             user.vacation_hours += form.hours.data
+            new_value = user.vacation_hours
         
-        bucket_change = BucketChange(category=form.category.data, old_value=old_value, new_value=old_value + form.hours.data, user_id=user.id)
+        bucket_change = BucketChange(category=form.category.data, old_value=old_value, new_value=new_value, user_id=user.id)
         db.session.add(bucket_change)
         db.session.commit()
         flash(f'Successfully added {form.hours.data} hours to {form.category.data} for {user.username}', 'success')
@@ -131,20 +135,40 @@ def add_time_off(user_id):
 def delete_time_off(time_off_id):
     time_off = TimeOff.query.get_or_404(time_off_id)
     user_id = time_off.user_id
+    user = User.query.get_or_404(user_id)
+    
+    if time_off.reason == 'pto':
+        user.pto_hours -= time_off.hours
+    elif time_off.reason == 'emergency':
+        user.emergency_hours -= time_off.hours
+    elif time_off.reason == 'vacation':
+        user.vacation_hours -= time_off.hours
+
     db.session.delete(time_off)
     db.session.commit()
     flash('Time off entry deleted successfully', 'success')
     return redirect(url_for('view_user', user_id=user_id))
+
 
 @app.route('/delete_bucket_change/<int:bucket_change_id>', methods=['POST'])
 @login_required
 def delete_bucket_change(bucket_change_id):
     bucket_change = BucketChange.query.get_or_404(bucket_change_id)
     user_id = bucket_change.user_id
+    user = User.query.get_or_404(user_id)
+    
+    if bucket_change.category == 'pto':
+        user.pto_hours = bucket_change.old_value
+    elif bucket_change.category == 'emergency':
+        user.emergency_hours = bucket_change.old_value
+    elif bucket_change.category == 'vacation':
+        user.vacation_hours = bucket_change.old_value
+
     db.session.delete(bucket_change)
     db.session.commit()
     flash('Bucket change entry deleted successfully', 'success')
     return redirect(url_for('view_user', user_id=user_id))
+
 
 
 @app.route('/logout')
