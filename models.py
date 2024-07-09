@@ -17,6 +17,7 @@ class User(db.Model, UserMixin):
     vacation_hours = db.Column(db.Integer, nullable=False, default=0)
 
     time_off = db.relationship('TimeOff', backref='user', lazy=True)
+    bucket_changes = db.relationship('BucketChange', backref='user', lazy=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -36,6 +37,17 @@ class TimeOff(db.Model):
 
     def __repr__(self):
         return f"TimeOff('{self.date}', '{self.hours}', '{self.reason}')"
+
+class BucketChange(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    category = db.Column(db.String(100), nullable=False)
+    old_value = db.Column(db.Integer, nullable=False)
+    new_value = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    def __repr__(self):
+        return f"BucketChange('{self.date}', '{self.category}', '{self.old_value}', '{self.new_value}')"
 
 @login_manager.user_loader
 def load_user(user_id):
