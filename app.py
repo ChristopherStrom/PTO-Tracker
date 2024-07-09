@@ -119,6 +119,26 @@ def add_time_off(user_id):
         return redirect(url_for('view_user', user_id=user_id))
     return render_template('add_time_off.html', form=form, user=user)
 
+@app.route('/delete_time_off/<int:time_off_id>', methods=['POST'])
+@login_required
+def delete_time_off(time_off_id):
+    time_off = TimeOff.query.get_or_404(time_off_id)
+    user_id = time_off.user_id
+    db.session.delete(time_off)
+    db.session.commit()
+    flash('Time off entry deleted successfully', 'success')
+    return redirect(url_for('view_user', user_id=user_id))
+
+@app.route('/delete_bucket_change/<int:bucket_change_id>', methods=['POST'])
+@login_required
+def delete_bucket_change(bucket_change_id):
+    bucket_change = BucketChange.query.get_or_404(bucket_change_id)
+    user_id = bucket_change.user_id
+    db.session.delete(bucket_change)
+    db.session.commit()
+    flash('Bucket change entry deleted successfully', 'success')
+    return redirect(url_for('view_user', user_id=user_id))
+
 
 @app.route('/logout')
 def logout():
