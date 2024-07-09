@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Add Time for {{ user.username }}</h1>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div>
+            {{ form.hours.label }}
+            {{ form.hours }}
+        </div>
+        <div>
+            {{ form.category.label }}
+            {{ form.category }}
+        </div>
+        <div>
+            {{ form.submit }}
+        </div>
+    </form>
+{% endblock %}
