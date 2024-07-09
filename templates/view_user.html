@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>{{ user.username }}</h1>
+    <p>Start Date: {{ user.start_date }}</p>
+    <p>Birth Date: {{ user.birth_date }}</p>
+    <p>PTO Hours: {{ user.pto_hours }}</p>
+    <p>Emergency Hours: {{ user.emergency_hours }}</p>
+    <p>Vacation Hours: {{ user.vacation_hours }}</p>
+    <a href="{{ url_for('add_time_off', user_id=user.id) }}">Add Time Off</a>
+    <ul>
+        {% for time_off in user.time_off %}
+            <li>{{ time_off.date }} - {{ time_off.hours }} hours - {{ time_off.reason }}</li>
+        {% endfor %}
+    </ul>
+{% endblock %}
