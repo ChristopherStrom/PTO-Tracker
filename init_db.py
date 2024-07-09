@@ -15,7 +15,7 @@ default_birth_date = datetime(1970, 1, 1)  # Example birth date
 with app.app_context():
     db.create_all()
     if not User.query.filter_by(username=default_username).first():
-        admin = User(username=default_username, birth_date=default_birth_date)
+        admin = User(username=default_username, birth_date=default_birth_date, start_date=datetime.utcnow())
         admin.set_password(default_password)
         db.session.add(admin)
         db.session.commit()
