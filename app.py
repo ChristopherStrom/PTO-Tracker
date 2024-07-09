@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user, login_required
 from config import Config
 from models import db, login_manager, User, TimeOff
-from forms import LoginForm, AddUserForm, TimeOffForm
+from forms import LoginForm, AddUserForm, TimeOffForm, AddTimeForm
 from datetime import datetime, timedelta
 import random
 import string
