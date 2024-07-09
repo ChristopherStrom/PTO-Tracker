@@ -19,3 +19,9 @@ class TimeOffForm(FlaskForm):
     hours = IntegerField('Hours', validators=[DataRequired()])
     reason = SelectField('Reason', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
     submit = SubmitField('Add Time Off')
+
+class AddTimeForm(FlaskForm):
+    hours = IntegerField('Hours', validators=[DataRequired()])
+    category = SelectField('Category', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
+    submit = SubmitField('Add Time')
+
