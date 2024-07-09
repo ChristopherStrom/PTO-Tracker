@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, DateField, IntegerField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, DateField, IntegerField, SelectField
 from wtforms.validators import DataRequired, Length
 
 class LoginForm(FlaskForm):
@@ -17,5 +17,5 @@ class AddUserForm(FlaskForm):
 class TimeOffForm(FlaskForm):
     date = DateField('Date', validators=[DataRequired()])
     hours = IntegerField('Hours', validators=[DataRequired()])
-    reason = StringField('Reason', validators=[DataRequired(), Length(max=100)])
+    reason = SelectField('Reason', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
     submit = SubmitField('Add Time Off')
