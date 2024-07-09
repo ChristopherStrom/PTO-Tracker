@@ -78,7 +78,7 @@ def view_user(user_id):
     bucket_changes = BucketChange.query.filter_by(user_id=user_id).all()
     time_offs = TimeOff.query.filter_by(user_id=user_id).filter(db.extract('year', TimeOff.date) == year).all()
 
-    return render_template('view_user.html', user=user, form=form, bucket_changes=bucket_changes, time_offs=time_offs, year=year)
+    return render_template('view_user.html', user=user, form=form, bucket_changes=bucket_changes, time_offs=time_offs, year=year, datetime=datetime)
 
 @app.route('/add_time/<int:user_id>', methods=['GET', 'POST'])
 @login_required
