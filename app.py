@@ -57,7 +57,7 @@ def view_user(user_id):
     user = User.query.get_or_404(user_id)
     form = EditBucketForm()
     year = request.args.get('year', datetime.utcnow().year, type=int)
-    
+
     if form.validate_on_submit():
         old_value = 0
         if form.category.data == 'pto':
@@ -75,11 +75,14 @@ def view_user(user_id):
         db.session.commit()
         flash(f'{form.category.data.capitalize()} hours updated to {form.new_value.data}', 'success')
         return redirect(url_for('view_user', user_id=user.id))
-    
-    # Calculate the totals from bucket changes
-    pto_total = db.session.query(db.func.sum(BucketChange.new_value - BucketChange.old_value)).filter_by(user_id=user_id, category='pto').scalar() or 0
-    emergency_total = db.session.query(db.func.sum(BucketChange.new_value - BucketChange.old_value)).filter_by(user_id=user_id, category='emergency').scalar() or 0
-    vacation_total = db.session.query(db.func.sum(BucketChange.new_value - BucketChange.old_value)).filter_by(user_id=user_id, category='vacation').scalar() or 0
+
+    # Calculate the totals from time off entries and bucket changes
+    pto_total = (db.session.query(db.func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='pto').scalar() or 0) + \
+                (db.session.query(db.func.sum(BucketChange.new_value - BucketChange.old_value)).filter_by(user_id=user_id, category='pto').scalar() or 0)
+    emergency_total = (db.session.query(db.func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='emergency').scalar() or 0) + \
+                      (db.session.query(db.func.sum(BucketChange.new_value - BucketChange.old_value)).filter_by(user_id=user_id, category='emergency').scalar() or 0)
+    vacation_total = (db.session.query(db.func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='vacation').scalar() or 0) + \
+                     (db.session.query(db.func.sum(BucketChange.new_value - BucketChange.old_value)).filter_by(user_id=user_id, category='vacation').scalar() or 0)
 
     bucket_changes = BucketChange.query.filter_by(user_id=user_id).all()
     time_offs = TimeOff.query.filter_by(user_id=user_id).filter(db.extract('year', TimeOff.date) == year).all()
@@ -156,25 +159,24 @@ def delete_time_off(time_off_id):
     return redirect(url_for('view_user', user_id=user_id))
 
 
-@app.route('/delete_bucket_change/<int:bucket_change_id>', methods=['POST'])
+@app.route('/delete_time_off/<int:time_off_id>', methods=['POST'])
 @login_required
-def delete_bucket_change(bucket_change_id):
-    bucket_change = BucketChange.query.get_or_404(bucket_change_id)
-    user_id = bucket_change.user_id
+def delete_time_off(time_off_id):
+    time_off = TimeOff.query.get_or_404(time_off_id)
+    user_id = time_off.user_id
     user = User.query.get_or_404(user_id)
     
-    if bucket_change.category == 'pto':
-        user.pto_hours = bucket_change.old_value
-    elif bucket_change.category == 'emergency':
-        user.emergency_hours = bucket_change.old_value
-    elif bucket_change.category == 'vacation':
-        user.vacation_hours = bucket_change.old_value
+    if time_off.reason == 'pto':
+        user.pto_hours -= time_off.hours
+    elif time_off.reason == 'emergency':
+        user.emergency_hours -= time_off.hours
+    elif time_off.reason == 'vacation':
+        user.vacation_hours -= time_off.hours
 
-    db.session.delete(bucket_change)
+    db.session.delete(time_off)
     db.session.commit()
-    flash('Bucket change entry deleted successfully', 'success')
+    flash('Time off entry deleted successfully', 'success')
     return redirect(url_for('view_user', user_id=user_id))
-
 
 
 @app.route('/logout')
