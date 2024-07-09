@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Add Time Off</h1>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div>
+            {{ form.date.label }}
+            {{ form.date }}
+        </div>
+        <div>
+            {{ form.hours.label }}
+            {{ form.hours }}
+        </div>
+        <div>
+            {{ form.reason.label }}
+            {{ form.reason }}
+        </div>
+        <div>
+            {{ form.submit }}
+        </div>
+    </form>
+{% endblock %}
