@@ -42,13 +42,15 @@ import logging
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    filter_status = request.args.get('status', 'all')
+    filter_role = request.args.get('role', 'all')
     try:
         if current_user.role == 'admin':
-            if filter_status == 'all':
+            if filter_role == 'all':
                 users = User.query.order_by(func.lower(User.username).asc()).all()
+            elif filter_role == 'admin':
+                users = User.query.filter_by(role='admin').order_by(func.lower(User.username).asc()).all()
             else:
-                users = User.query.filter_by(status=filter_status).order_by(func.lower(User.username).asc()).all()
+                users = User.query.filter_by(status=filter_role).order_by(func.lower(User.username).asc()).all()
         else:
             users = [current_user]
 
