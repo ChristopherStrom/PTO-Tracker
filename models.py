@@ -15,6 +15,8 @@ class User(db.Model, UserMixin):
     pto_hours = db.Column(db.Integer, nullable=False, default=0)
     emergency_hours = db.Column(db.Integer, nullable=False, default=0)
     vacation_hours = db.Column(db.Integer, nullable=False, default=0)
+    status = db.Column(db.String(10), nullable=False, default='active')  # active or inactive
+    role = db.Column(db.String(10), nullable=False, default='user')  # user or admin
 
     time_off = db.relationship('TimeOff', backref='user', lazy=True)
     bucket_changes = db.relationship('BucketChange', backref='user', lazy=True)
@@ -26,7 +28,7 @@ class User(db.Model, UserMixin):
         return check_password_hash(self.password_hash, password)
 
     def __repr__(self):
-        return f"User('{self.username}', '{self.start_date}', '{self.birth_date}')"
+        return f"User('{self.username}', '{self.start_date}', '{self.birth_date}', '{self.status}', '{self.role}')"
 
 class TimeOff(db.Model):
     id = db.Column(db.Integer, primary_key=True)
