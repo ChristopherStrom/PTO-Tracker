@@ -5,12 +5,12 @@
         <a href="{{ url_for('add_user') }}" class="btn btn-primary">Add User</a>
         <form method="GET" action="{{ url_for('dashboard') }}" class="mt-3">
             <div class="form-group">
-                <label for="status">Filter by Status</label>
-                <select id="status" name="status" class="form-control" onchange="this.form.submit()">
-                    <option value="all" {% if filter_status == 'all' %}selected{% endif %}>All</option>
-                    <option value="active" {% if filter_status == 'active' %}selected{% endif %}>Active</option>
-                    <option value="inactive" {% if filter_status == 'inactive' %}selected{% endif %}>Inactive</option>
-                    <option value="admin" {% if filter_status == 'admin' %}selected{% endif %}>Admin</option>
+                <label for="role">Filter by Role</label>
+                <select id="role" name="role" class="form-control" onchange="this.form.submit()">
+                    <option value="all" {% if filter_role == 'all' %}selected{% endif %}>All</option>
+                    <option value="active" {% if filter_role == 'active' %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if filter_role == 'inactive' %}selected{% endif %}>Inactive</option>
+                    <option value="admin" {% if filter_role == 'admin' %}selected{% endif %}>Admin</option>
                 </select>
             </div>
         </form>
