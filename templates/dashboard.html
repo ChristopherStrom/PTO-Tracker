@@ -21,20 +21,26 @@
                 <th>Username</th>
                 <th>Status</th>
                 <th>Role</th>
+                <th>PTO Hours</th>
+                <th>Emergency Hours</th>
+                <th>Vacation Hours</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            {% for user in users %}
+            {% for data in user_data %}
                 <tr>
-                    <td>{{ user.username }}</td>
-                    <td>{{ user.status }}</td>
-                    <td>{{ user.role }}</td>
+                    <td>{{ data.user.username }}</td>
+                    <td>{{ data.user.status }}</td>
+                    <td>{{ data.user.role }}</td>
+                    <td>{{ data.pto_total }}</td>
+                    <td>{{ data.emergency_total }}</td>
+                    <td>{{ data.vacation_total }}</td>
                     <td>
-                        <a href="{{ url_for('view_user', user_id=user.id) }}" class="btn btn-info btn-sm">View</a>
+                        <a href="{{ url_for('view_user', user_id=data.user.id) }}" class="btn btn-info btn-sm">View</a>
                         {% if current_user.role == 'admin' %}
-                            <a href="{{ url_for('edit_user', user_id=user.id) }}" class="btn btn-warning btn-sm">Edit</a>
-                            <form action="{{ url_for('edit_user', user_id=user.id) }}" method="post" style="display:inline;">
+                            <a href="{{ url_for('edit_user', user_id=data.user.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                            <form action="{{ url_for('edit_user', user_id=data.user.id) }}" method="post" style="display:inline;">
                                 <input type="hidden" name="status" value="inactive">
                                 <button type="submit" class="btn btn-secondary btn-sm">Set Inactive</button>
                             </form>
