@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Edit User</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.username.label(class="form-label") }}
+            {{ form.username(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.birth_date.label(class="form-label") }}
+            {{ form.birth_date(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.start_date.label(class="form-label") }}
+            {{ form.start_date(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.status.label(class="form-label") }}
+            {{ form.status(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.role.label(class="form-label") }}
+            {{ form.role(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.password.label(class="form-label") }}
+            {{ form.password(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+{% endblock %}
