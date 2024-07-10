@@ -1,33 +1,32 @@
-<!-- templates/edit_user.html -->
 {% extends "layout.html" %}
 {% block content %}
 <h2>Edit User</h2>
 <form method="POST" action="{{ url_for('edit_user', user_id=user.id) }}">
     {{ form.hidden_tag() }}
-    <p>
+    <div class="form-group">
         {{ form.username.label }}<br>
-        {{ form.username(size=32) }}
-    </p>
-    <p>
+        {{ form.username(class="form-control") }}
+    </div>
+    <div class="form-group">
         {{ form.birth_date.label }}<br>
-        {{ form.birth_date(size=32) }}
-    </p>
-    <p>
+        {{ form.birth_date(class="form-control") }}
+    </div>
+    <div class="form-group">
         {{ form.start_date.label }}<br>
-        {{ form.start_date(size=32) }}
-    </p>
-    <p>
+        {{ form.start_date(class="form-control") }}
+    </div>
+    <div class="form-group">
         {{ form.status.label }}<br>
-        {{ form.status(size=32) }}
-    </p>
-    <p>
+        {{ form.status(class="form-control") }}
+    </div>
+    <div class="form-group">
         {{ form.role.label }}<br>
-        {{ form.role(size=32) }}
-    </p>
-    <p>
+        {{ form.role(class="form-control") }}
+    </div>
+    <div class="form-group">
         {{ form.password.label }}<br>
-        {{ form.password(size=32) }}
-    </p>
-    <p><input type="submit" value="Update"></p>
+        {{ form.password(class="form-control") }}
+    </div>
+    <button type="submit" class="btn btn-primary">Update</button>
 </form>
 {% endblock %}
