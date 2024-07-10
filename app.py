@@ -127,7 +127,11 @@ def edit_user(user_id):
 def view_user():
     user_id = request.args.get('user_id', current_user.id, type=int)
     user = User.query.get_or_404(user_id)
-    all_users = User.query.all() if current_user.role == 'admin' else [current_user]
+    
+    if current_user.role == 'admin':
+        all_users = User.query.order_by(func.lower(User.username).asc()).all()
+    else:
+        all_users = [current_user]
 
     form = EditBucketForm()
     year = request.args.get('year', datetime.utcnow().year, type=int)
@@ -151,21 +155,12 @@ def view_user():
         return redirect(url_for('view_user', user_id=user.id))
     
     # Calculate the totals from bucket changes
-    initial_pto_total = db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='pto').scalar() or 0
-    initial_emergency_total = db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='emergency').scalar() or 0
-    initial_vacation_total = db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='vacation').scalar() or 0
-
-    # Subtract the time off hours
-    used_pto_hours = db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='pto').scalar() or 0
-    used_emergency_hours = db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='emergency').scalar() or 0
-    used_vacation_hours = db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='vacation').scalar() or 0
-
-    pto_total = initial_pto_total - used_pto_hours
-    emergency_total = initial_emergency_total - used_emergency_hours
-    vacation_total = initial_vacation_total - used_vacation_hours
+    pto_total = db.session.query(db.func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='pto').scalar() or 0
+    emergency_total = db.session.query(db.func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='emergency').scalar() or 0
+    vacation_total = db.session.query(db.func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='vacation').scalar() or 0
 
     bucket_changes = BucketChange.query.filter_by(user_id=user_id).all()
-    time_offs = TimeOff.query.filter_by(user_id=user_id).filter(func.extract('year', TimeOff.date) == year).all()
+    time_offs = TimeOff.query.filter_by(user_id=user_id).filter(db.extract('year', TimeOff.date) == year).all()
 
     return render_template('view_user.html', user=user, form=form, bucket_changes=bucket_changes, time_offs=time_offs, year=year, datetime=datetime, pto_total=pto_total, emergency_total=emergency_total, vacation_total=vacation_total, all_users=all_users)
 
