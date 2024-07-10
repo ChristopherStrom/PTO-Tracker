@@ -1,7 +1,9 @@
+# forms.py
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, DateField, IntegerField, SelectField
-from wtforms.validators import DataRequired, Length
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, DateField, FloatField, SelectField
+from wtforms.validators import DataRequired, Length, EqualTo, ValidationError
 from models import User
+from datetime import datetime
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
@@ -28,16 +30,16 @@ class EditUserForm(FlaskForm):
 
 class TimeOffForm(FlaskForm):
     date = DateField('Date', validators=[DataRequired()])
-    hours = IntegerField('Hours', validators=[DataRequired()])
+    hours = FloatField('Hours', validators=[DataRequired()])
     reason = SelectField('Reason', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
     submit = SubmitField('Add Time Off')
 
 class AddTimeForm(FlaskForm):
     category = SelectField('Category', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
-    hours = IntegerField('Hours', validators=[DataRequired()])
+    hours = FloatField('Hours', validators=[DataRequired()])
     submit = SubmitField('Add Time')
 
 class EditBucketForm(FlaskForm):
     category = SelectField('Category', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
-    new_value = IntegerField('New Value', validators=[DataRequired()])
+    new_value = FloatField('New Value', validators=[DataRequired()])
     submit = SubmitField('Update Bucket')
