@@ -76,7 +76,7 @@ def dashboard():
                 'vacation_total': vacation_total
             })
 
-        return render_template('dashboard.html', user_data=user_data, filter_status=filter_status)
+        return render_template('dashboard.html', user_data=user_data, filter_role=filter_role)
     except Exception as e:
         logging.error(f"Error in dashboard route: {e}")
         flash('An error occurred while loading the dashboard.', 'danger')
