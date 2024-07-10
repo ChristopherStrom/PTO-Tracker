@@ -10,7 +10,7 @@
                 <li class="list-group-item"><strong>Emergency Hours:</strong> {{ emergency_total }}</li>
                 <li class="list-group-item"><strong>Vacation Hours:</strong> {{ vacation_total }}</li>
             </ul>
-            <a href="{{ url_for('add_time', user_id=user.id) }}" class="btn btn-warning">Add Time Off</a>
+            <a href="{{ url_for('add_time_off', user_id=user.id) }}" class="btn btn-warning">Add Time Off</a>
             {% if current_user.role == 'admin' %}
                 <a href="{{ url_for('add_time', user_id=user.id) }}" class="btn btn-success">Add Time to Buckets</a>
             {% endif %}
