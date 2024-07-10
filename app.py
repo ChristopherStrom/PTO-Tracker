@@ -35,10 +35,14 @@ def login():
 @login_required
 def dashboard():
     if current_user.role == 'admin':
-        users = User.query.all()
-        return render_template('dashboard.html', users=users)
+        filter_status = request.args.get('status', 'all')
+        if filter_status == 'all':
+            users = User.query.all()
+        else:
+            users = User.query.filter_by(status=filter_status).all()
     else:
-        return redirect(url_for('view_user', user_id=current_user.id))
+        users = [current_user]
+    return render_template('dashboard.html', users=users, filter_status=filter_status)
 
 @app.route('/add_user', methods=['GET', 'POST'])
 @login_required
@@ -83,18 +87,6 @@ def edit_user(user_id):
         form.status.data = user.status
         form.role.data = user.role
     return render_template('edit_user.html', form=form, user=user)
-
-@app.route('/delete_user/<int:user_id>', methods=['POST'])
-@login_required
-def delete_user(user_id):
-    if current_user.role != 'admin':
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('dashboard'))
-    user = User.query.get_or_404(user_id)
-    db.session.delete(user)
-    db.session.commit()
-    flash('User deleted successfully', 'success')
-    return redirect(url_for('dashboard'))
 
 @app.route('/view_user/<int:user_id>', methods=['GET', 'POST'])
 @login_required
