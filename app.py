@@ -34,8 +34,8 @@ def login():
 @app.route('/dashboard')
 @login_required
 def dashboard():
+    filter_status = request.args.get('status', 'all')
     if current_user.role == 'admin':
-        filter_status = request.args.get('status', 'all')
         if filter_status == 'all':
             users = User.query.all()
         else:
