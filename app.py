@@ -5,7 +5,7 @@ from flask_migrate import Migrate
 from config import Config
 from models import db, login_manager, User, TimeOff, BucketChange
 from forms import LoginForm, AddUserForm, TimeOffForm, AddTimeForm, EditBucketForm
-from datetime import datetime, timedelta
+from datetime import datetime
 import random
 import string
 
@@ -24,26 +24,32 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
-        if user and user.check_password(form.password.data):
+        if user and user.check_password(form.password.data) and user.status == 'active':
             login_user(user, remember=form.remember.data)
             return redirect(url_for('dashboard'))
         else:
-            flash('Login Unsuccessful. Please check username and password', 'danger')
+            flash('Login Unsuccessful. Please check username, password, and account status', 'danger')
     return render_template('login.html', form=form)
 
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    users = User.query.all()
-    return render_template('dashboard.html', users=users)
+    if current_user.role == 'admin':
+        users = User.query.all()
+        return render_template('dashboard.html', users=users)
+    else:
+        return redirect(url_for('view_user', user_id=current_user.id))
 
 @app.route('/add_user', methods=['GET', 'POST'])
 @login_required
 def add_user():
+    if current_user.role != 'admin':
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('dashboard'))
     form = AddUserForm()
     if form.validate_on_submit():
         hashed_password = ''.join(random.choices(string.ascii_letters + string.digits, k=16))
-        user = User(username=form.username.data, birth_date=form.birth_date.data, start_date=form.start_date.data)
+        user = User(username=form.username.data, birth_date=form.birth_date.data, start_date=form.start_date.data, status=form.status.data, role=form.role.data)
         user.set_password(hashed_password)
         db.session.add(user)
         db.session.commit()
@@ -55,6 +61,9 @@ def add_user():
 @login_required
 def view_user(user_id):
     user = User.query.get_or_404(user_id)
+    if current_user.role != 'admin' and current_user.id != user_id:
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('dashboard'))
     form = EditBucketForm()
     year = request.args.get('year', datetime.utcnow().year, type=int)
     
@@ -89,6 +98,9 @@ def view_user(user_id):
 @app.route('/add_time/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def add_time(user_id):
+    if current_user.role != 'admin' and current_user.id != user_id:
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('dashboard'))
     form = AddTimeForm()
     user = User.query.get_or_404(user_id)
     if form.validate_on_submit():
@@ -119,6 +131,9 @@ def add_time(user_id):
 def delete_time_off(time_off_id):
     time_off = TimeOff.query.get_or_404(time_off_id)
     user_id = time_off.user_id
+    if current_user.role != 'admin' and current_user.id != user_id:
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('dashboard'))
     user = User.query.get_or_404(user_id)
     
     if time_off.reason == 'pto':
@@ -138,6 +153,9 @@ def delete_time_off(time_off_id):
 def delete_bucket_change(bucket_change_id):
     bucket_change = BucketChange.query.get_or_404(bucket_change_id)
     user_id = bucket_change.user_id
+    if current_user.role != 'admin' and current_user.id != user_id:
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('dashboard'))
     user = User.query.get_or_404(user_id)
     
     if bucket_change.category == 'pto':
