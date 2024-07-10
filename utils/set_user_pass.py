@@ -2,7 +2,7 @@ import sys
 import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import generate_password_hash
 
 # Configuration for the Flask app
 class Config:
@@ -26,29 +26,29 @@ class User(db.Model):
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
-
-# Function to get the user's password
-def get_user_password(username):
+# Function to update the user's password
+def update_user_password(username, new_password):
     user = User.query.filter_by(username=username).first()
     if user:
-        return user.password_hash
+        user.set_password(new_password)
+        db.session.commit()
+        return True
     else:
-        return None
+        return False
 
 # Main function to run the script
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python get_user_pass.py <username>")
+    if len(sys.argv) != 3:
+        print("Usage: python update_user_pass.py <username> <new_password>")
         sys.exit(1)
 
     username = sys.argv[1]
+    new_password = sys.argv[2]
     
     with app.app_context():
-        password = get_user_password(username)
+        success = update_user_password(username, new_password)
     
-    if password:
-        print(f"The password hash for {username} is: {password}")
+    if success:
+        print(f"The password for {username} has been updated.")
     else:
         print(f"No user found with username: {username}")
