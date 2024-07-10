@@ -69,8 +69,10 @@ def edit_user(user_id):
     if current_user.role != 'admin':
         flash('Unauthorized access', 'danger')
         return redirect(url_for('dashboard'))
+    
     user = User.query.get_or_404(user_id)
-    form = EditUserForm()
+    form = EditUserForm(obj=user)
+    
     if form.validate_on_submit():
         user.username = form.username.data
         user.birth_date = form.birth_date.data
@@ -82,13 +84,8 @@ def edit_user(user_id):
         db.session.commit()
         flash('User updated successfully', 'success')
         return redirect(url_for('dashboard'))
-    elif request.method == 'GET':
-        form.username.data = user.username
-        form.birth_date.data = user.birth_date
-        form.start_date.data = user.start_date
-        form.status.data = user.status
-        form.role.data = user.role
     return render_template('edit_user.html', form=form, user=user)
+
 
 @app.route('/view_user/<int:user_id>', methods=['GET', 'POST'])
 @login_required
