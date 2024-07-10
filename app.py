@@ -119,16 +119,20 @@ def view_user(user_id):
     emergency_total = db.session.query(db.func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='emergency').scalar() or 0
     vacation_total = db.session.query(db.func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='vacation').scalar() or 0
 
-    # Calculate the total PTO hours used
+    # Calculate the total hours used
     pto_used = db.session.query(db.func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='pto').scalar() or 0
+    emergency_used = db.session.query(db.func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='emergency').scalar() or 0
+    vacation_used = db.session.query(db.func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='vacation').scalar() or 0
 
-    # Calculate the actual available PTO hours
+    # Calculate the actual available hours
     pto_available = pto_total - pto_used
+    emergency_available = emergency_total - emergency_used
+    vacation_available = vacation_total - vacation_used
 
     bucket_changes = BucketChange.query.filter_by(user_id=user_id).all()
     time_offs = TimeOff.query.filter_by(user_id=user_id).filter(db.extract('year', TimeOff.date) == year).all()
 
-    return render_template('view_user.html', user=user, form=form, bucket_changes=bucket_changes, time_offs=time_offs, year=year, datetime=datetime, pto_total=pto_available, emergency_total=emergency_total, vacation_total=vacation_total)
+    return render_template('view_user.html', user=user, form=form, bucket_changes=bucket_changes, time_offs=time_offs, year=year, datetime=datetime, pto_total=pto_available, emergency_total=emergency_available, vacation_total=vacation_available)
 
 @app.route('/add_time_off/<int:user_id>', methods=['GET', 'POST'])
 @login_required
