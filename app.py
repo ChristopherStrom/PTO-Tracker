@@ -4,7 +4,7 @@ from flask_login import LoginManager, UserMixin, login_user, current_user, logou
 from flask_migrate import Migrate
 from config import Config
 from models import db, login_manager, User, TimeOff, BucketChange
-from forms import LoginForm, AddUserForm, TimeOffForm, AddTimeForm, EditBucketForm
+from forms import LoginForm, AddUserForm, EditUserForm, TimeOffForm, AddTimeForm, EditBucketForm
 from datetime import datetime
 import random
 import string
@@ -56,6 +56,45 @@ def add_user():
         flash(f'User {form.username.data} added with password {hashed_password}', 'success')
         return redirect(url_for('dashboard'))
     return render_template('add_user.html', form=form)
+
+@app.route('/edit_user/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def edit_user(user_id):
+    if current_user.role != 'admin':
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('dashboard'))
+    user = User.query.get_or_404(user_id)
+    form = EditUserForm()
+    if form.validate_on_submit():
+        user.username = form.username.data
+        user.birth_date = form.birth_date.data
+        user.start_date = form.start_date.data
+        user.status = form.status.data
+        user.role = form.role.data
+        if form.password.data:  # Update password if provided
+            user.set_password(form.password.data)
+        db.session.commit()
+        flash('User updated successfully', 'success')
+        return redirect(url_for('dashboard'))
+    elif request.method == 'GET':
+        form.username.data = user.username
+        form.birth_date.data = user.birth_date
+        form.start_date.data = user.start_date
+        form.status.data = user.status
+        form.role.data = user.role
+    return render_template('edit_user.html', form=form, user=user)
+
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
+@login_required
+def delete_user(user_id):
+    if current_user.role != 'admin':
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('dashboard'))
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+    flash('User deleted successfully', 'success')
+    return redirect(url_for('dashboard'))
 
 @app.route('/view_user/<int:user_id>', methods=['GET', 'POST'])
 @login_required
