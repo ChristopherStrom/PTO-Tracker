@@ -125,6 +125,22 @@ def view_user(user_id):
 
     return render_template('view_user.html', user=user, form=form, bucket_changes=bucket_changes, time_offs=time_offs, year=year, datetime=datetime, pto_total=pto_total, emergency_total=emergency_total, vacation_total=vacation_total)
 
+@app.route('/add_time_off/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def add_time_off(user_id):
+    if current_user.role != 'admin' and current_user.id != user_id:
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('dashboard'))
+    form = TimeOffForm()
+    user = User.query.get_or_404(user_id)
+    if form.validate_on_submit():
+        time_off = TimeOff(date=form.date.data, hours=form.hours.data, reason=form.reason.data, user_id=user.id)
+        db.session.add(time_off)
+        db.session.commit()
+        flash(f'Successfully added {form.hours.data} hours of {form.reason.data} for {user.username}', 'success')
+        return redirect(url_for('view_user', user_id=user.id))
+    return render_template('add_time_off.html', form=form, user=user)
+
 @app.route('/add_time/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def add_time(user_id):
@@ -155,6 +171,7 @@ def add_time(user_id):
         flash(f'Successfully added {form.hours.data} hours to {form.category.data} for {user.username}', 'success')
         return redirect(url_for('view_user', user_id=user.id))
     return render_template('add_time.html', form=form, user=user)
+
 
 @app.route('/delete_time_off/<int:time_off_id>', methods=['POST'])
 @login_required
