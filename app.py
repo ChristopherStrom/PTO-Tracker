@@ -86,7 +86,6 @@ def edit_user(user_id):
         return redirect(url_for('dashboard'))
     return render_template('edit_user.html', form=form, user=user)
 
-
 @app.route('/view_user/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def view_user(user_id):
@@ -120,10 +119,16 @@ def view_user(user_id):
     emergency_total = db.session.query(db.func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='emergency').scalar() or 0
     vacation_total = db.session.query(db.func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='vacation').scalar() or 0
 
+    # Calculate the total PTO hours used
+    pto_used = db.session.query(db.func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='pto').scalar() or 0
+
+    # Calculate the actual available PTO hours
+    pto_available = pto_total - pto_used
+
     bucket_changes = BucketChange.query.filter_by(user_id=user_id).all()
     time_offs = TimeOff.query.filter_by(user_id=user_id).filter(db.extract('year', TimeOff.date) == year).all()
 
-    return render_template('view_user.html', user=user, form=form, bucket_changes=bucket_changes, time_offs=time_offs, year=year, datetime=datetime, pto_total=pto_total, emergency_total=emergency_total, vacation_total=vacation_total)
+    return render_template('view_user.html', user=user, form=form, bucket_changes=bucket_changes, time_offs=time_offs, year=year, datetime=datetime, pto_total=pto_available, emergency_total=emergency_total, vacation_total=vacation_total)
 
 @app.route('/add_time_off/<int:user_id>', methods=['GET', 'POST'])
 @login_required
