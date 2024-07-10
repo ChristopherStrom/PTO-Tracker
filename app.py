@@ -46,6 +46,7 @@ def dashboard():
         users = [current_user]
     return render_template('dashboard.html', users=users, filter_status=filter_status)
 
+
 @app.route('/add_user', methods=['GET', 'POST'])
 @login_required
 def add_user():
