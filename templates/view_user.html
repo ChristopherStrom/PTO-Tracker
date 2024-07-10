@@ -2,7 +2,20 @@
 {% block content %}
     <div class="row">
         <div class="col-md-8">
-            <h2>{{ user.username }}</h2>
+            {% if current_user.role == 'admin' %}
+                <form method="GET" action="{{ url_for('view_user') }}" class="form-inline mb-3">
+                    <div class="form-group">
+                        <label for="user_select" class="mr-2">Select User:</label>
+                        <select id="user_select" name="user_id" class="form-control" onchange="this.form.submit()">
+                            {% for u in all_users %}
+                                <option value="{{ u.id }}" {% if u.id == user.id %}selected{% endif %}>{{ u.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            {% else %}
+                <h2>{{ user.username }}</h2>
+            {% endif %}
             <ul class="list-group mb-3">
                 <li class="list-group-item"><strong>Start Date:</strong> {{ user.start_date }}</li>
                 <li class="list-group-item"><strong>Birth Date:</strong> {{ user.birth_date }}</li>
