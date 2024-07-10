@@ -15,9 +15,10 @@ app.config.from_object(Config)
 
 db.init_app(app)
 login_manager.init_app(app)
+csrf = CSRFProtect(app)
 migrate = Migrate(app, db)
 
-csrf = CSRFProtect(app)
+
 
 @app.route('/')
 @app.route('/login', methods=['GET', 'POST'])
