@@ -6,6 +6,7 @@ from config import Config
 from models import db, login_manager, User, TimeOff, BucketChange
 from forms import LoginForm, AddUserForm, EditUserForm, TimeOffForm, AddTimeForm, EditBucketForm
 from datetime import datetime
+from flask_wtf.csrf import CSRFProtect
 import random
 import string
 
