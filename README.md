@@ -115,4 +115,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Support
 
-For any questions or issues, please contact the project maintainer at [email@example.com].
+For any questions or issues, please contact the project maintainer at [cstrom@clsio.com].
