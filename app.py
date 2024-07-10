@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, flash, redirect, request
+from flask import Flask, render_template, url_for, flash, redirect, request, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user, login_required
 from flask_migrate import Migrate
@@ -13,13 +13,10 @@ import string
 app = Flask(__name__)
 app.config.from_object(Config)
 
-csrf = CSRFProtect(app)
-
 db.init_app(app)
 login_manager.init_app(app)
+csrf = CSRFProtect(app)
 migrate = Migrate(app, db)
-
-
 
 @app.route('/')
 @app.route('/login', methods=['GET', 'POST'])
@@ -226,7 +223,6 @@ def set_session():
 @app.route('/get_session')
 def get_session():
     return session.get('test', 'Session variable not set.')
-
 
 @app.route('/logout')
 def logout():
