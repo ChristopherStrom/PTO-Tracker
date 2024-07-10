@@ -72,6 +72,7 @@
                     <td>
                         {% if current_user.role == 'admin' %}
                             <form method="POST" action="{{ url_for('delete_time_off', time_off_id=time_off.id) }}" style="display:inline;">
+                                {{ form.hidden_tag() }}
                                 <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                             </form>
                         {% else %}
@@ -103,6 +104,7 @@
                     <td>
                         {% if current_user.role == 'admin' %}
                             <form method="POST" action="{{ url_for('delete_bucket_change', bucket_change_id=change.id) }}" style="display:inline;">
+                                {{ form.hidden_tag() }}
                                 <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                             </form>
                         {% else %}
