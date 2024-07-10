@@ -13,9 +13,10 @@ import string
 app = Flask(__name__)
 app.config.from_object(Config)
 
+csrf = CSRFProtect(app)
+
 db.init_app(app)
 login_manager.init_app(app)
-csrf = CSRFProtect(app)
 migrate = Migrate(app, db)
 
 
