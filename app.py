@@ -33,33 +33,41 @@ def login():
             flash('Login Unsuccessful. Please check username, password, and account status', 'danger')
     return render_template('login.html', form=form)
 
+import logging
+
 @app.route('/dashboard')
 @login_required
 def dashboard():
     filter_status = request.args.get('status', 'all')
-    if current_user.role == 'admin':
-        if filter_status == 'all':
-            users = User.query.order_by(func.lower(User.username).asc()).all()
+    try:
+        if current_user.role == 'admin':
+            if filter_status == 'all':
+                users = User.query.order_by(func.lower(User.username).asc()).all()
+            else:
+                users = User.query.filter_by(status=filter_status).order_by(func.lower(User.username).asc()).all()
         else:
-            users = User.query.filter_by(status=filter_status).order_by(func.lower(User.username).asc()).all()
-    else:
-        users = [current_user]
+            users = [current_user]
 
-    # Calculate PTO, Emergency, and Vacation hours for each user
-    user_data = []
-    for user in users:
-        pto_total = db.session.query(db.func.sum(BucketChange.new_value)).filter_by(user_id=user.id, category='pto').scalar() or 0
-        emergency_total = db.session.query(db.func.sum(BucketChange.new_value)).filter_by(user_id=user.id, category='emergency').scalar() or 0
-        vacation_total = db.session.query(db.func.sum(BucketChange.new_value)).filter_by(user_id=user.id, category='vacation').scalar() or 0
+        # Calculate PTO, Emergency, and Vacation hours for each user
+        user_data = []
+        for user in users:
+            pto_total = db.session.query(db.func.sum(BucketChange.new_value)).filter_by(user_id=user.id, category='pto').scalar() or 0
+            emergency_total = db.session.query(db.func.sum(BucketChange.new_value)).filter_by(user_id=user.id, category='emergency').scalar() or 0
+            vacation_total = db.session.query(db.func.sum(BucketChange.new_value)).filter_by(user_id=user.id, category='vacation').scalar() or 0
 
-        user_data.append({
-            'user': user,
-            'pto_total': pto_total,
-            'emergency_total': emergency_total,
-            'vacation_total': vacation_total
-        })
+            user_data.append({
+                'user': user,
+                'pto_total': pto_total,
+                'emergency_total': emergency_total,
+                'vacation_total': vacation_total
+            })
 
-    return render_template('dashboard.html', user_data=user_data, filter_status=filter_status)
+        return render_template('dashboard.html', user_data=user_data, filter_status=filter_status)
+    except Exception as e:
+        logging.error(f"Error in dashboard route: {e}")
+        flash('An error occurred while loading the dashboard.', 'danger')
+        return redirect(url_for('login'))
+
 
 
 
