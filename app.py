@@ -16,6 +16,8 @@ db.init_app(app)
 login_manager.init_app(app)
 migrate = Migrate(app, db)
 
+csrf = CSRFProtect(app)
+
 @app.route('/')
 @app.route('/login', methods=['GET', 'POST'])
 def login():
