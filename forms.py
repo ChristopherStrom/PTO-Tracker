@@ -18,6 +18,15 @@ class AddUserForm(FlaskForm):
     role = SelectField('Role', choices=[('user', 'User'), ('admin', 'Admin')], validators=[DataRequired()])
     submit = SubmitField('Add User')
 
+class EditUserForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
+    birth_date = DateField('Birth Date', validators=[DataRequired()])
+    start_date = DateField('Start Date', validators=[DataRequired()])
+    status = SelectField('Status', choices=[('active', 'Active'), ('inactive', 'Inactive')], validators=[DataRequired()])
+    role = SelectField('Role', choices=[('user', 'User'), ('admin', 'Admin')], validators=[DataRequired()])
+    password = PasswordField('Password', validators=[Length(min=0, max=20)])  # Allow empty password for no change
+    submit = SubmitField('Update User')
+
 class TimeOffForm(FlaskForm):
     date = DateField('Date', validators=[DataRequired()])
     hours = IntegerField('Hours', validators=[DataRequired()])
