@@ -131,11 +131,7 @@ def edit_user(user_id):
 def view_user():
     user_id = request.args.get('user_id', current_user.id, type=int)
     user = User.query.get_or_404(user_id)
-    
-    if current_user.role == 'admin':
-        all_users = User.query.order_by(func.lower(User.username).asc()).all()
-    else:
-        all_users = [current_user]
+    all_users = User.query.order_by(func.lower(User.username)).all() if current_user.role == 'admin' else [current_user]
 
     form = EditBucketForm()
     year = request.args.get('year', datetime.utcnow().year, type=int)
@@ -156,7 +152,7 @@ def view_user():
         db.session.add(bucket_change)
         db.session.commit()
         flash(f'{form.category.data.capitalize()} hours updated to {form.new_value.data}', 'success')
-        return redirect(url_for('view_user', user_id=user.id))
+        return redirect(url_for('view_user', user_id=user.id, year=year))
     
     # Calculate the totals from bucket changes
     pto_total = db.session.query(db.func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='pto').scalar() or 0
