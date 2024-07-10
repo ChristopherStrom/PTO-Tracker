@@ -217,6 +217,15 @@ def update_status(user_id):
     flash('User status updated successfully', 'success')
     return redirect(url_for('dashboard'))
 
+@app.route('/set_session')
+def set_session():
+    session['test'] = 'It works!'
+    return 'Session variable set.'
+
+@app.route('/get_session')
+def get_session():
+    return session.get('test', 'Session variable not set.')
+
 
 @app.route('/logout')
 def logout():
