@@ -11,24 +11,28 @@
                 <li class="list-group-item"><strong>Vacation Hours:</strong> {{ vacation_total }}</li>
             </ul>
             <a href="{{ url_for('add_time', user_id=user.id) }}" class="btn btn-warning">Add Time Off</a>
-            <a href="{{ url_for('add_time', user_id=user.id) }}" class="btn btn-success">Add Time to Buckets</a>
+            {% if current_user.role == 'admin' %}
+                <a href="{{ url_for('add_time', user_id=user.id) }}" class="btn btn-success">Add Time to Buckets</a>
+            {% endif %}
         </div>
         <div class="col-md-4">
-            <h3>Edit Buckets</h3>
-            <form method="POST">
-                {{ form.hidden_tag() }}
-                <div class="form-group">
-                    {{ form.category.label(class="form-label") }}
-                    {{ form.category(class="form-control") }}
-                </div>
-                <div class="form-group">
-                    {{ form.new_value.label(class="form-label") }}
-                    {{ form.new_value(class="form-control") }}
-                </div>
-                <div class="form-group">
-                    {{ form.submit(class="btn btn-primary btn-block") }}
-                </div>
-            </form>
+            {% if current_user.role == 'admin' %}
+                <h3>Edit Buckets</h3>
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ form.category.label(class="form-label") }}
+                        {{ form.category(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.new_value.label(class="form-label") }}
+                        {{ form.new_value(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.submit(class="btn btn-primary btn-block") }}
+                    </div>
+                </form>
+            {% endif %}
         </div>
     </div>
     <h3 class="mt-4">Time Off History</h3>
@@ -66,9 +70,13 @@
                         {% endif %}
                     </td>
                     <td>
-                        <form method="POST" action="{{ url_for('delete_time_off', time_off_id=time_off.id) }}" style="display:inline;">
-                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                        </form>
+                        {% if current_user.role == 'admin' %}
+                            <form method="POST" action="{{ url_for('delete_time_off', time_off_id=time_off.id) }}" style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        {% else %}
+                            <button class="btn btn-danger btn-sm" disabled>Delete</button>
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}
@@ -93,9 +101,13 @@
                     <td>{{ change.old_value }}</td>
                     <td>{{ change.new_value }}</td>
                     <td>
-                        <form method="POST" action="{{ url_for('delete_bucket_change', bucket_change_id=change.id) }}" style="display:inline;">
-                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                        </form>
+                        {% if current_user.role == 'admin' %}
+                            <form method="POST" action="{{ url_for('delete_bucket_change', bucket_change_id=change.id) }}" style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        {% else %}
+                            <button class="btn btn-danger btn-sm" disabled>Delete</button>
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}
