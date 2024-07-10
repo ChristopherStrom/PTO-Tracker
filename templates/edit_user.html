@@ -1,34 +1,33 @@
-{% extends "base.html" %}
+<!-- templates/edit_user.html -->
+{% extends "layout.html" %}
 {% block content %}
-    <h2>Edit User</h2>
-    <form method="POST">
-        {{ form.hidden_tag() }}
-        <div class="form-group">
-            {{ form.username.label(class="form-label") }}
-            {{ form.username(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.birth_date.label(class="form-label") }}
-            {{ form.birth_date(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.start_date.label(class="form-label") }}
-            {{ form.start_date(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.status.label(class="form-label") }}
-            {{ form.status(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.role.label(class="form-label") }}
-            {{ form.role(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.password.label(class="form-label") }}
-            {{ form.password(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.submit(class="btn btn-primary") }}
-        </div>
-    </form>
+<h2>Edit User</h2>
+<form method="POST" action="{{ url_for('edit_user', user_id=user.id) }}">
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.username.label }}<br>
+        {{ form.username(size=32) }}
+    </p>
+    <p>
+        {{ form.birth_date.label }}<br>
+        {{ form.birth_date(size=32) }}
+    </p>
+    <p>
+        {{ form.start_date.label }}<br>
+        {{ form.start_date(size=32) }}
+    </p>
+    <p>
+        {{ form.status.label }}<br>
+        {{ form.status(size=32) }}
+    </p>
+    <p>
+        {{ form.role.label }}<br>
+        {{ form.role(size=32) }}
+    </p>
+    <p>
+        {{ form.password.label }}<br>
+        {{ form.password(size=32) }}
+    </p>
+    <p><input type="submit" value="Update"></p>
+</form>
 {% endblock %}
