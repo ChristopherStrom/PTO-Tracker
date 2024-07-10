@@ -39,9 +39,9 @@ def dashboard():
     filter_status = request.args.get('status', 'all')
     if current_user.role == 'admin':
         if filter_status == 'all':
-            users = User.query.order_by(func.lower(User.username).asc()).all()
+            users = User.query.order_by(User.username.asc()).all()
         else:
-            users = User.query.filter_by(status=filter_status).order_by(func.lower(User.username).asc()).all()
+            users = User.query.filter_by(status=filter_status).order_by(User.username.asc()).all()
     else:
         users = [current_user]
     return render_template('dashboard.html', users=users, filter_status=filter_status)
