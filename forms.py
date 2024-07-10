@@ -1,6 +1,8 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, DateField, IntegerField, SelectField
-from wtforms.validators import DataRequired, Length
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, DateField, IntegerField, SelectField
+from wtforms.validators import DataRequired, Length, EqualTo, ValidationError
+from models import User
+from datetime import datetime
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
@@ -10,8 +12,10 @@ class LoginForm(FlaskForm):
 
 class AddUserForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
-    start_date = DateField('Start Date', validators=[DataRequired()])
     birth_date = DateField('Birth Date', validators=[DataRequired()])
+    start_date = DateField('Start Date', validators=[DataRequired()])
+    status = SelectField('Status', choices=[('active', 'Active'), ('inactive', 'Inactive')], validators=[DataRequired()])
+    role = SelectField('Role', choices=[('user', 'User'), ('admin', 'Admin')], validators=[DataRequired()])
     submit = SubmitField('Add User')
 
 class TimeOffForm(FlaskForm):
@@ -21,8 +25,8 @@ class TimeOffForm(FlaskForm):
     submit = SubmitField('Add Time Off')
 
 class AddTimeForm(FlaskForm):
-    hours = IntegerField('Hours', validators=[DataRequired()])
     category = SelectField('Category', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
+    hours = IntegerField('Hours', validators=[DataRequired()])
     submit = SubmitField('Add Time')
 
 class EditBucketForm(FlaskForm):
