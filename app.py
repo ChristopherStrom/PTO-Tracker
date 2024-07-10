@@ -7,10 +7,11 @@ from models import db, login_manager, User, TimeOff, BucketChange
 from forms import LoginForm, AddUserForm, EditUserForm, TimeOffForm, AddTimeForm, EditBucketForm
 from datetime import datetime
 from flask_wtf.csrf import CSRFProtect
+from sqlalchemy import func
 import random
 import string
 import logging
-from sqlalchemy import func
+import logging
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -32,12 +33,11 @@ def login():
         user = User.query.filter_by(username=form.username.data).first()
         if user and user.check_password(form.password.data) and user.status == 'active':
             login_user(user, remember=form.remember.data)
+            session.permanent = True  # Make the session permanent
             return redirect(url_for('dashboard'))
         else:
             flash('Login Unsuccessful. Please check username, password, and account status', 'danger')
     return render_template('login.html', form=form)
-
-import logging
 
 @app.route('/dashboard')
 @login_required
