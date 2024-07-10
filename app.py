@@ -201,6 +201,19 @@ def delete_bucket_change(bucket_change_id):
     flash('Bucket change entry deleted successfully', 'success')
     return redirect(url_for('view_user', user_id=user_id))
 
+@app.route('/update_status/<int:user_id>', methods=['POST'])
+@login_required
+def update_status(user_id):
+    if current_user.role != 'admin':
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('dashboard'))
+    user = User.query.get_or_404(user_id)
+    user.status = request.form['status']
+    db.session.commit()
+    flash('User status updated successfully', 'success')
+    return redirect(url_for('dashboard'))
+
+
 @app.route('/logout')
 def logout():
     logout_user()
