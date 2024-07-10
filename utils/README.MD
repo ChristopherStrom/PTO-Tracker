@@ -6,9 +6,9 @@ This utility allows you to update the password for a specified user in the PTO T
 
 From the root directory of your project, you can run the utility using the following command:
 
-\`\`\`sh
+```sh
 python3 ./utils/update_user_pass.py <username> <new_password>
-\`\`\`
+```
 
 Replace `<username>` with the username of the user you want to update and `<new_password>` with the new password you want to set.
 
@@ -16,9 +16,9 @@ Replace `<username>` with the username of the user you want to update and `<new_
 
 To update the password for the user `Chris.Strom` to `new_password123`, you would run:
 
-\`\`\`sh
+```sh
 python3 ./utils/update_user_pass.py Chris.Strom new_password123
-\`\`\`
+```
 
 ## File Structure
 
@@ -41,9 +41,9 @@ python3 ./utils/update_user_pass.py Chris.Strom new_password123
 
 Make sure you have the required dependencies installed. You can install them using:
 
-\`\`\`sh
+```sh
 pip install Flask SQLAlchemy Werkzeug
-\`\`\`
+```
 
 ## License
 
