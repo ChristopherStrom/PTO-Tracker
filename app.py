@@ -9,6 +9,8 @@ from datetime import datetime
 from flask_wtf.csrf import CSRFProtect
 import random
 import string
+import logging
+from sqlalchemy import func
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -17,6 +19,8 @@ db.init_app(app)
 login_manager.init_app(app)
 csrf = CSRFProtect(app)
 migrate = Migrate(app, db)
+
+logging.basicConfig(level=logging.INFO)
 
 @app.route('/')
 @app.route('/login', methods=['GET', 'POST'])
