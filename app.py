@@ -270,10 +270,16 @@ def update_status(user_id):
     if current_user.role != 'admin':
         flash('Unauthorized access', 'danger')
         return redirect(url_for('dashboard'))
+    
     user = User.query.get_or_404(user_id)
-    user.status = request.form['status']
-    db.session.commit()
-    flash('User status updated successfully', 'success')
+    new_status = request.form.get('status')
+    if new_status:
+        user.status = new_status
+        db.session.commit()
+        flash(f'User status updated to {new_status}', 'success')
+    else:
+        flash('Invalid status update request', 'danger')
+    
     return redirect(url_for('dashboard'))
 
 @app.route('/set_session')
