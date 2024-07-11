@@ -13,6 +13,10 @@ import string
 import logging
 import logging
 
+
+class HiddenForm(FlaskForm):
+    csrf_token = HiddenField()
+
 app = Flask(__name__)
 app.config.from_object(Config)
 
