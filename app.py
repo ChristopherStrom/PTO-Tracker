@@ -8,6 +8,7 @@ from forms import LoginForm, AddUserForm, EditUserForm, TimeOffForm, AddTimeForm
 from datetime import datetime
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import func
+from wtforms import HiddenField
 import random
 import string
 import logging
