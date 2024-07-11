@@ -9,6 +9,7 @@ from datetime import datetime
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import func
 from wtforms import HiddenField
+from flask_wtf import FlaskForm
 import random
 import string
 import logging
