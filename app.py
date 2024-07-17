@@ -144,7 +144,7 @@ def view_user():
     form = EditBucketForm()
     year = request.args.get('year', datetime.utcnow().year, type=int)
     
-    if form.validate_on_submit():
+    if form.validate_on_submit() and current_user.role == 'admin':
         old_value = 0
         if form.category.data == 'pto':
             old_value = user.pto_hours
