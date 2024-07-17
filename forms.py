@@ -28,10 +28,11 @@ class EditUserForm(FlaskForm):
     submit = SubmitField('Update User')
 
 class TimeOffForm(FlaskForm):
-    date = DateField('Date', validators=[DataRequired()])
-    hours = FloatField('Hours', validators=[DataRequired()])
+    start_date = DateField('Start Date', format='%Y-%m-%d', validators=[DataRequired()])
+    end_date = DateField('End Date', format='%Y-%m-%d', validators=[DataRequired()])
+    total_hours = IntegerField('Total Hours', validators=[DataRequired()])
     reason = SelectField('Reason', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
-    submit = SubmitField('Add Time Off')
+    submit = SubmitField('Submit')
 
 class AddTimeForm(FlaskForm):
     category = SelectField('Category', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
