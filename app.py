@@ -189,10 +189,24 @@ def add_time_off(user_id):
     form = TimeOffForm()
     user = User.query.get_or_404(user_id)
     if form.validate_on_submit():
-        time_off = TimeOff(date=form.date.data, hours=form.hours.data, reason=form.reason.data, user_id=user.id)
-        db.session.add(time_off)
+        start_date = form.start_date.data
+        end_date = form.end_date.data
+        total_hours = form.total_hours.data
+        reason = form.reason.data
+
+        # Calculate the number of days in the range
+        num_days = (end_date - start_date).days + 1
+
+        # Distribute total_hours across the days in the range
+        hours_per_day = total_hours / num_days
+
+        for i in range(num_days):
+            current_date = start_date + timedelta(days=i)
+            time_off = TimeOff(date=current_date, hours=hours_per_day, reason=reason, user_id=user.id)
+            db.session.add(time_off)
+
         db.session.commit()
-        flash(f'Successfully added {form.hours.data} hours of {form.reason.data} for {user.username}', 'success')
+        flash(f'Successfully added {total_hours} hours of {reason} from {start_date} to {end_date} for {user.username}', 'success')
         return redirect(url_for('view_user', user_id=user.id))
     return render_template('add_time_off.html', form=form, user=user)
 
