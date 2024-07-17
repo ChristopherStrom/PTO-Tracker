@@ -162,10 +162,18 @@ def view_user():
         flash(f'{form.category.data.capitalize()} hours updated to {form.new_value.data}', 'success')
         return redirect(url_for('view_user', user_id=user.id, year=year))
     
-    # Calculate the totals from bucket changes
-    pto_total = db.session.query(db.func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='pto').scalar() or 0
-    emergency_total = db.session.query(db.func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='emergency').scalar() or 0
-    vacation_total = db.session.query(db.func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='vacation').scalar() or 0
+    # Calculate the totals from bucket changes and subtract used hours
+    initial_pto_total = db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='pto').scalar() or 0
+    initial_emergency_total = db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='emergency').scalar() or 0
+    initial_vacation_total = db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='vacation').scalar() or 0
+
+    used_pto_hours = db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='pto').scalar() or 0
+    used_emergency_hours = db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='emergency').scalar() or 0
+    used_vacation_hours = db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='vacation').scalar() or 0
+
+    pto_total = initial_pto_total - used_pto_hours
+    emergency_total = initial_emergency_total - used_emergency_hours
+    vacation_total = initial_vacation_total - used_vacation_hours
 
     bucket_changes = BucketChange.query.filter_by(user_id=user_id).all()
     time_offs = TimeOff.query.filter_by(user_id=user_id).filter(db.extract('year', TimeOff.date) == year).all()
