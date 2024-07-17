@@ -1,30 +1,37 @@
 {% extends "base.html" %}
 {% block content %}
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <h2 class="text-center">Add Time Off</h2>
-            <form method="POST">
-                {{ form.hidden_tag() }}
-                <div class="form-group">
-                    {{ form.start_date.label(class="form-label") }}
-                    {{ form.start_date(class="form-control") }}
-                </div>
-                <div class="form-group">
-                    {{ form.end_date.label(class="form-label") }}
-                    {{ form.end_date(class="form-control") }}
-                </div>
-                <div class="form-group">
-                    {{ form.total_hours.label(class="form-label") }}
-                    {{ form.total_hours(class="form-control") }}
-                </div>
-                <div class="form-group">
-                    {{ form.reason.label(class="form-label") }}
-                    {{ form.reason(class="form-control") }}
-                </div>
-                <div class="form-group">
-                    {{ form.submit(class="btn btn-primary btn-block") }}
-                </div>
-            </form>
-        </div>
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2 class="text-center">Add Time Off</h2>
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.start_date.label(class="form-label") }}
+                {{ form.start_date(class="form-control", id="start_date") }}
+            </div>
+            <div class="form-group">
+                {{ form.end_date.label(class="form-label") }}
+                {{ form.end_date(class="form-control", id="end_date") }}
+            </div>
+            <div class="form-group">
+                {{ form.total_hours.label(class="form-label") }}
+                {{ form.total_hours(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.reason.label(class="form-label") }}
+                {{ form.reason(class="form-control") }}
+            </div>
+            <div class="form-group">
+                {{ form.submit(class="btn btn-primary btn-block") }}
+            </div>
+        </form>
     </div>
+</div>
+
+<script>
+document.getElementById('start_date').addEventListener('change', function() {
+    var startDate = this.value;
+    document.getElementById('end_date').value = startDate;
+});
+</script>
 {% endblock %}
