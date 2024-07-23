@@ -19,9 +19,15 @@
             <ul class="list-group mb-3">
                 <li class="list-group-item"><strong>Start Date:</strong> {{ user.start_date }}</li>
                 <li class="list-group-item"><strong>Birth Date:</strong> {{ user.birth_date }}</li>
-                <li class="list-group-item"><strong>PTO Hours:</strong> {{ pto_total }}</li>
-                <li class="list-group-item"><strong>Emergency Hours:</strong> {{ emergency_total }}</li>
-                <li class="list-group-item"><strong>Vacation Hours:</strong> {{ vacation_total }}</li>
+                <li class="list-group-item"><strong>PTO Hours (Bucket):</strong> {{ initial_pto_total }}</li>
+                <li class="list-group-item"><strong>PTO Hours (Used):</strong> {{ used_pto_hours }}</li>
+                <li class="list-group-item"><strong>PTO Hours (Total):</strong> {{ pto_total }}</li>
+                <li class="list-group-item"><strong>Emergency Hours (Bucket):</strong> {{ initial_emergency_total }}</li>
+                <li class="list-group-item"><strong>Emergency Hours (Used):</strong> {{ used_emergency_hours }}</li>
+                <li class="list-group-item"><strong>Emergency Hours (Total):</strong> {{ emergency_total }}</li>
+                <li class="list-group-item"><strong>Vacation Hours (Bucket):</strong> {{ initial_vacation_total }}</li>
+                <li class="list-group-item"><strong>Vacation Hours (Used):</strong> {{ used_vacation_hours }}</li>
+                <li class="list-group-item"><strong>Vacation Hours (Total):</strong> {{ vacation_total }}</li>
             </ul>
             <a href="{{ url_for('add_time_off', user_id=user.id) }}" class="btn btn-warning">Add Time Off</a>
             {% if current_user.role == 'admin' %}
