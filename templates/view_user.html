@@ -48,7 +48,6 @@
         {% endif %}
     </div>
 </div>
-
 <h3 class="mt-4">Time Off History</h3>
 <form method="GET" action="{{ url_for('view_user', user_id=user.id) }}">
     <div class="form-group">
@@ -153,4 +152,6 @@
         </li>
     {% endfor %}
 </ul>
+
+<a href="{{ url_for('view_user', user_id=user.id, year=year, export='pdf') }}" class="btn btn-info mt-4">Export PDF</a>
 {% endblock %}
