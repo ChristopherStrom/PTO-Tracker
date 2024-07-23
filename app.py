@@ -10,6 +10,9 @@ from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import func
 from wtforms import HiddenField
 from flask_wtf import FlaskForm
+from flask import make_response
+from weasyprint import HTML
+import io
 import random
 import string
 import logging
@@ -179,8 +182,15 @@ def view_user():
     time_offs = TimeOff.query.filter_by(user_id=user_id).filter(db.extract('year', TimeOff.date) == year).order_by(TimeOff.date.desc()).all()
     notes = Note.query.filter_by(user_id=user_id).order_by(Note.date.desc()).all()
 
-    return render_template('view_user.html', user=user, form=form, note_form=note_form, bucket_changes=bucket_changes, time_offs=time_offs, year=year, datetime=datetime, initial_pto_total=initial_pto_total, used_pto_hours=used_pto_hours, pto_total=pto_total, initial_emergency_total=initial_emergency_total, used_emergency_hours=used_emergency_hours, emergency_total=emergency_total, initial_vacation_total=initial_vacation_total, used_vacation_hours=used_vacation_hours, vacation_total=vacation_total, all_users=all_users, notes=notes)
+    if request.args.get('export') == 'pdf':
+        html = render_template('export_user.html', user=user, bucket_changes=bucket_changes, time_offs=time_offs, initial_pto_total=initial_pto_total, used_pto_hours=used_pto_hours, pto_total=pto_total, initial_emergency_total=initial_emergency_total, used_emergency_hours=used_emergency_hours, emergency_total=emergency_total, initial_vacation_total=initial_vacation_total, used_vacation_hours=used_vacation_hours, vacation_total=vacation_total)
+        pdf = HTML(string=html).write_pdf()
+        response = make_response(pdf)
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'inline; filename={user.username}_report.pdf'
+        return response
 
+    return render_template('view_user.html', user=user, form=form, note_form=note_form, bucket_changes=bucket_changes, time_offs=time_offs, year=year, datetime=datetime, initial_pto_total=initial_pto_total, used_pto_hours=used_pto_hours, pto_total=pto_total, initial_emergency_total=initial_emergency_total, used_emergency_hours=used_emergency_hours, emergency_total=emergency_total, initial_vacation_total=initial_vacation_total, used_vacation_hours=used_vacation_hours, vacation_total=vacation_total, all_users=all_users, notes=notes)
 @app.route('/add_note/<int:user_id>', methods=['POST'])
 @login_required
 def add_note(user_id):
