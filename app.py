@@ -3,8 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user, login_required
 from flask_migrate import Migrate
 from config import Config
-from models import db, login_manager, User, TimeOff, BucketChange, Note
 from forms import LoginForm, AddUserForm, EditUserForm, TimeOffForm, AddTimeForm, EditBucketForm, NoteForm
+from models import db, login_manager, User, TimeOff, BucketChange, Note
 from datetime import datetime, timedelta
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import func
@@ -187,6 +187,19 @@ def view_user():
     notes = Note.query.filter_by(user_id=user_id).order_by(Note.date.desc()).all()
 
     return render_template('view_user.html', user=user, form=form, note_form=note_form, bucket_changes=bucket_changes, time_offs=time_offs, year=year, datetime=datetime, initial_pto_total=initial_pto_total, used_pto_hours=used_pto_hours, pto_total=pto_total, initial_emergency_total=initial_emergency_total, used_emergency_hours=used_emergency_hours, emergency_total=emergency_total, initial_vacation_total=initial_vacation_total, used_vacation_hours=used_vacation_hours, vacation_total=vacation_total, all_users=all_users, notes=notes)
+
+@app.route('/add_note/<int:user_id>', methods=['POST'])
+@login_required
+def add_note(user_id):
+    form = NoteForm()
+    if form.validate_on_submit():
+        note = Note(content=form.content.data, user_id=user_id)
+        db.session.add(note)
+        db.session.commit()
+        flash('Note added successfully', 'success')
+    else:
+        flash('Error adding note', 'danger')
+    return redirect(url_for('view_user', user_id=user_id))
 
 @app.route('/add_time_off/<int:user_id>', methods=['GET', 'POST'])
 @login_required
