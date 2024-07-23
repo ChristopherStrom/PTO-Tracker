@@ -142,6 +142,7 @@ def view_user():
     all_users = User.query.order_by(func.lower(User.username)).all() if current_user.role == 'admin' else [current_user]
 
     form = EditBucketForm()
+    note_form = NoteForm()
     year = request.args.get('year', datetime.utcnow().year, type=int)
     
     if form.validate_on_submit():
@@ -162,6 +163,13 @@ def view_user():
         flash(f'{form.category.data.capitalize()} hours updated to {form.new_value.data}', 'success')
         return redirect(url_for('view_user', user_id=user.id, year=year))
     
+    if note_form.validate_on_submit():
+        note = Note(content=note_form.content.data, user_id=user.id)
+        db.session.add(note)
+        db.session.commit()
+        flash('Note added successfully', 'success')
+        return redirect(url_for('view_user', user_id=user.id, year=year))
+    
     # Calculate the totals from bucket changes and time off, rounding to 2 decimal places
     initial_pto_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='pto').scalar() or 0, 2)
     initial_emergency_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='emergency').scalar() or 0, 2)
@@ -177,8 +185,9 @@ def view_user():
 
     bucket_changes = BucketChange.query.filter_by(user_id=user_id).order_by(BucketChange.date.desc()).all()
     time_offs = TimeOff.query.filter_by(user_id=user_id).filter(db.extract('year', TimeOff.date) == year).order_by(TimeOff.date.desc()).all()
+    notes = Note.query.filter_by(user_id=user_id).order_by(Note.date.desc()).all()
 
-    return render_template('view_user.html', user=user, form=form, bucket_changes=bucket_changes, time_offs=time_offs, year=year, datetime=datetime, initial_pto_total=initial_pto_total, used_pto_hours=used_pto_hours, pto_total=pto_total, initial_emergency_total=initial_emergency_total, used_emergency_hours=used_emergency_hours, emergency_total=emergency_total, initial_vacation_total=initial_vacation_total, used_vacation_hours=used_vacation_hours, vacation_total=vacation_total, all_users=all_users)
+    return render_template('view_user.html', user=user, form=form, note_form=note_form, bucket_changes=bucket_changes, time_offs=time_offs, notes=notes, year=year, datetime=datetime, initial_pto_total=initial_pto_total, used_pto_hours=used_pto_hours, pto_total=pto_total, initial_emergency_total=initial_emergency_total, used_emergency_hours=used_emergency_hours, emergency_total=emergency_total, initial_vacation_total=initial_vacation_total, used_vacation_hours=used_vacation_hours, vacation_total=vacation_total, all_users=all_users)
 
 @app.route('/add_time_off/<int:user_id>', methods=['GET', 'POST'])
 @login_required
