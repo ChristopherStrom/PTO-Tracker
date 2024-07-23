@@ -198,8 +198,23 @@ def add_note(user_id):
         db.session.commit()
         flash('Note added successfully', 'success')
     else:
-        flash('Error adding note', 'danger')
+        flash('Failed to add note', 'danger')
     return redirect(url_for('view_user', user_id=user_id))
+
+@app.route('/delete_note/<int:note_id>', methods=['POST'])
+@login_required
+def delete_note(note_id):
+    note = Note.query.get_or_404(note_id)
+    user_id = note.user_id
+    if current_user.role != 'admin' and current_user.id != user_id:
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    db.session.delete(note)
+    db.session.commit()
+    flash('Note deleted successfully', 'success')
+    return redirect(url_for('view_user', user_id=user_id))
+
 
 @app.route('/add_time_off/<int:user_id>', methods=['GET', 'POST'])
 @login_required
