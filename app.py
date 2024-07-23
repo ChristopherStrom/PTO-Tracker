@@ -171,9 +171,9 @@ def view_user():
     used_emergency_hours = db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='emergency').scalar() or 0
     used_vacation_hours = db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='vacation').scalar() or 0
 
-    pto_total = round(initial_pto_total - (used_pto_hours or 0), 2)
-    emergency_total = round(initial_emergency_total - (used_emergency_hours or 0), 2)
-    vacation_total = round(initial_vacation_total - (used_vacation_hours or 0), 2)
+    pto_total = initial_pto_total - used_pto_hours
+    emergency_total = initial_emergency_total - used_emergency_hours
+    vacation_total = initial_vacation_total - used_vacation_hours
 
     bucket_changes = BucketChange.query.filter_by(user_id=user_id).all()
     time_offs = TimeOff.query.filter_by(user_id=user_id).filter(db.extract('year', TimeOff.date) == year).all()
