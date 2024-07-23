@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user, login_required
 from flask_migrate import Migrate
 from config import Config
-from models import db, login_manager, User, TimeOff, BucketChange
+from models import db, login_manager, User, TimeOff, BucketChange, Note
 from forms import LoginForm, AddUserForm, EditUserForm, TimeOffForm, AddTimeForm, EditBucketForm, NoteForm
 from datetime import datetime, timedelta
 from flask_wtf.csrf import CSRFProtect
