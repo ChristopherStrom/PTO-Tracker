@@ -48,6 +48,7 @@
             {% endif %}
         </div>
     </div>
+
     <h3 class="mt-4">Time Off History</h3>
     <form method="GET" action="{{ url_for('view_user', user_id=user.id) }}">
         <div class="form-group">
@@ -96,6 +97,7 @@
             {% endfor %}
         </tbody>
     </table>
+
     <h3 class="mt-4">Bucket Changes</h3>
     <table class="table table-bordered">
         <thead>
@@ -128,6 +130,7 @@
             {% endfor %}
         </tbody>
     </table>
+
     <h3 class="mt-4">Notes</h3>
     <form method="POST" action="{{ url_for('view_user', user_id=user.id) }}">
         {{ note_form.hidden_tag() }}
@@ -139,20 +142,11 @@
             {{ note_form.submit(class="btn btn-primary btn-block") }}
         </div>
     </form>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Note</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for note in notes %}
-                <tr>
-                    <td>{{ note.date }}</td>
-                    <td>{{ note.content }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <ul class="list-group">
+        {% for note in notes %}
+            <li class="list-group-item">
+                <strong>{{ note.date.strftime('%Y-%m-%d %H:%M:%S') }}:</strong> {{ note.content }}
+            </li>
+        {% endfor %}
+    </ul>
 {% endblock %}
