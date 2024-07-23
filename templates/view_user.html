@@ -19,9 +19,15 @@
             <ul class="list-group mb-3">
                 <li class="list-group-item"><strong>Start Date:</strong> {{ user.start_date }}</li>
                 <li class="list-group-item"><strong>Birth Date:</strong> {{ user.birth_date }}</li>
-                <li class="list-group-item"><strong>PTO Hours:</strong> {{ pto_total }}</li>
-                <li class="list-group-item"><strong>Emergency Hours:</strong> {{ emergency_total }}</li>
-                <li class="list-group-item"><strong>Vacation Hours:</strong> {{ vacation_total }}</li>
+                <li class="list-group-item"><strong>Initial PTO Hours:</strong> {{ initial_pto_total }}</li>
+                <li class="list-group-item"><strong>PTO Used Hours:</strong> {{ used_pto_hours }}</li>
+                <li class="list-group-item"><strong>PTO Remaining Hours:</strong> {{ pto_total }}</li>
+                <li class="list-group-item"><strong>Initial Emergency Hours:</strong> {{ initial_emergency_total }}</li>
+                <li class="list-group-item"><strong>Emergency Used Hours:</strong> {{ used_emergency_hours }}</li>
+                <li class="list-group-item"><strong>Emergency Remaining Hours:</strong> {{ emergency_total }}</li>
+                <li class="list-group-item"><strong>Initial Vacation Hours:</strong> {{ initial_vacation_total }}</li>
+                <li class="list-group-item"><strong>Vacation Used Hours:</strong> {{ used_vacation_hours }}</li>
+                <li class="list-group-item"><strong>Vacation Remaining Hours:</strong> {{ vacation_total }}</li>
             </ul>
             <a href="{{ url_for('add_time_off', user_id=user.id) }}" class="btn btn-warning">Add Time Off</a>
             {% if current_user.role == 'admin' %}
@@ -46,10 +52,22 @@
                     </div>
                 </form>
             {% endif %}
+            <h3>Add Note</h3>
+            <form method="POST">
+                {{ note_form.hidden_tag() }}
+                <div class="form-group">
+                    {{ note_form.content.label(class="form-label") }}
+                    {{ note_form.content(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ note_form.submit(class="btn btn-primary btn-block") }}
+                </div>
+            </form>
         </div>
     </div>
     <h3 class="mt-4">Time Off History</h3>
-    <form method="GET" action="{{ url_for('view_user', user_id=user.id) }}">
+    <form method="GET" action="{{ url_for('view_user') }}">
+        <input type="hidden" name="user_id" value="{{ user.id }}">
         <div class="form-group">
             <label for="year">Filter by Year</label>
             <select id="year" name="year" class="form-control" onchange="this.form.submit()">
@@ -129,16 +147,6 @@
         </tbody>
     </table>
     <h3 class="mt-4">Notes</h3>
-    <form method="POST">
-        {{ note_form.hidden_tag() }}
-        <div class="form-group">
-            {{ note_form.content.label(class="form-label") }}
-            {{ note_form.content(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ note_form.submit(class="btn btn-primary btn-block") }}
-        </div>
-    </form>
     <table class="table table-bordered">
         <thead>
             <tr>
