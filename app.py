@@ -1,21 +1,20 @@
-from flask import Flask, render_template, url_for, flash, redirect, request, session
+from flask import Flask, render_template, url_for, flash, redirect, request, session, make_response
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user, login_required
 from flask_migrate import Migrate
 from config import Config
-from forms import LoginForm, AddUserForm, EditUserForm, TimeOffForm, AddTimeForm, EditBucketForm, NoteForm
 from models import db, login_manager, User, TimeOff, BucketChange, Note
-from datetime import datetime, timedelta
+from forms import LoginForm, AddUserForm, EditUserForm, TimeOffForm, AddTimeForm, EditBucketForm, NoteForm
+from datetime import datetime
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import func
 from wtforms import HiddenField
 from flask_wtf import FlaskForm
-from flask import make_response
 from weasyprint import HTML
-import io
 import random
 import string
 import logging
+import io
 
 
 class HiddenForm(FlaskForm):
