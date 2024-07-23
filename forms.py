@@ -43,3 +43,7 @@ class EditBucketForm(FlaskForm):
     category = SelectField('Category', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
     new_value = FloatField('New Value', validators=[DataRequired()])
     submit = SubmitField('Update Bucket')
+
+class NoteForm(FlaskForm):
+    content = TextAreaField('Note', validators=[DataRequired()])
+    submit = SubmitField('Add Note')
