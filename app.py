@@ -162,13 +162,6 @@ def view_user():
         flash(f'{form.category.data.capitalize()} hours updated to {form.new_value.data}', 'success')
         return redirect(url_for('view_user', user_id=user.id, year=year))
     
-    if note_form.validate_on_submit():
-        note = Note(content=note_form.content.data, user_id=user.id)
-        db.session.add(note)
-        db.session.commit()
-        flash('Note added successfully', 'success')
-        return redirect(url_for('view_user', user_id=user.id, year=year))
-    
     # Calculate the totals from bucket changes and time off, rounding to 2 decimal places
     initial_pto_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='pto').scalar() or 0, 2)
     initial_emergency_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='emergency').scalar() or 0, 2)
