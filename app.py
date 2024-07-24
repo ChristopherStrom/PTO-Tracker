@@ -177,20 +177,21 @@ def view_user():
     emergency_total = initial_emergency_total - used_emergency_hours
     vacation_total = initial_vacation_total - used_vacation_hours
 
+    bucket_changes = BucketChange.query.filter_by(user_id=user_id).order_by(BucketChange.date.desc()).all()
     time_offs = TimeOff.query.filter_by(user_id=user_id).filter(db.extract('year', TimeOff.date) == year).order_by(TimeOff.date.desc()).all()
     notes = Note.query.filter_by(user_id=user_id).order_by(Note.date.desc()).all()
 
     # PDF export
     if 'export' in request.args and request.args.get('export') == 'pdf':
-        rendered = render_template('export_user.html', user=user, time_offs=time_offs, initial_pto_total=initial_pto_total, used_pto_hours=used_pto_hours, pto_total=pto_total, initial_emergency_total=initial_emergency_total, used_emergency_hours=used_emergency_hours, emergency_total=emergency_total, initial_vacation_total=initial_vacation_total, used_vacation_hours=used_vacation_hours, vacation_total=vacation_total)
+        rendered = render_template('export_user.html', user=user, bucket_changes=bucket_changes, time_offs=time_offs, initial_pto_total=initial_pto_total, used_pto_hours=used_pto_hours, pto_total=pto_total, initial_emergency_total=initial_emergency_total, used_emergency_hours=used_emergency_hours, emergency_total=emergency_total, initial_vacation_total=initial_vacation_total, used_vacation_hours=used_vacation_hours, vacation_total=vacation_total)
         pdf = HTML(string=rendered).write_pdf()
         response = make_response(pdf)
         response.headers['Content-Type'] = 'application/pdf'
         response.headers['Content-Disposition'] = 'inline; filename=user_details.pdf'
         return response
 
-    return render_template('view_user.html', user=user, form=form, note_form=note_form, time_offs=time_offs, year=year, datetime=datetime, initial_pto_total=initial_pto_total, used_pto_hours=used_pto_hours, pto_total=pto_total, initial_emergency_total=initial_emergency_total, used_emergency_hours=used_emergency_hours, emergency_total=emergency_total, initial_vacation_total=initial_vacation_total, used_vacation_hours=used_vacation_hours, vacation_total=vacation_total, all_users=all_users, notes=notes)
-
+    return render_template('view_user.html'
+                           
 @app.route('/add_note/<int:user_id>', methods=['POST'])
 @login_required
 def add_note(user_id):
