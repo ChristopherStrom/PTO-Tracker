@@ -1,8 +1,7 @@
+# forms.py
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, DateField, FloatField, SelectField, TextAreaField, IntegerField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, DateField, FloatField, SelectField, TextAreaField, HiddenField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
-from models import User
-from datetime import datetime, timedelta
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
@@ -51,6 +50,6 @@ class NoteForm(FlaskForm):
 class AddPeriodForm(FlaskForm):
     start_date = DateField('Start Date', validators=[DataRequired()])
     end_date = DateField('End Date', validators=[DataRequired()])
-    user_id = IntegerField('User ID', validators=[DataRequired()])
+    user_id = HiddenField('User ID', validators=[DataRequired()])
     is_current = BooleanField('Is Current')
     submit = SubmitField('Add Period')
