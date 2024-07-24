@@ -1,9 +1,10 @@
+from datetime import datetime, timedelta
 from flask import Flask, render_template, url_for, flash, redirect, request, session, make_response
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user, login_required
 from flask_migrate import Migrate
 from config import Config
-from models import db, User, TimeOff, BucketChange, Note, Period
+from models import db, login_manager, User, TimeOff, BucketChange, Note, Period
 from forms import LoginForm, AddUserForm, EditUserForm, TimeOffForm, AddTimeForm, EditBucketForm, NoteForm, AddPeriodForm
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import func
@@ -15,14 +16,11 @@ import string
 import logging
 import io
 
-class HiddenForm(FlaskForm):
-    csrf_token = HiddenField()
-
 app = Flask(__name__)
 app.config.from_object(Config)
 
 db.init_app(app)
-login_manager = LoginManager(app)
+login_manager.init_app(app)
 csrf = CSRFProtect(app)
 migrate = Migrate(app, db)
 
@@ -31,7 +29,6 @@ logging.basicConfig(level=logging.INFO)
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
-
 @app.route('/')
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -128,7 +125,15 @@ def edit_user(user_id):
         return redirect(url_for('dashboard'))
     
     user = User.query.get_or_404(user_id)
-    form = EditUserForm(obj=user)
+    current_period = Period.query.filter_by(user_id=user_id, is_current=True).first()
+    
+    if request.method == 'GET':
+        form = EditUserForm(obj=user)
+        if current_period:
+            form.period_start_date.data = current_period.start_date
+            form.period_end_date.data = current_period.end_date
+    else:
+        form = EditUserForm()
     
     if form.validate_on_submit():
         user.username = form.username.data
@@ -138,9 +143,23 @@ def edit_user(user_id):
         user.role = form.role.data
         if form.password.data:  # Update password if provided
             user.set_password(form.password.data)
+        
+        if current_period:
+            current_period.start_date = form.period_start_date.data
+            current_period.end_date = form.period_end_date.data
+        else:
+            new_period = Period(
+                start_date=form.period_start_date.data,
+                end_date=form.period_end_date.data,
+                is_current=True,
+                user_id=user.id
+            )
+            db.session.add(new_period)
+        
         db.session.commit()
         flash('User updated successfully', 'success')
         return redirect(url_for('dashboard'))
+    
     return render_template('edit_user.html', form=form, user=user)
 
 @app.route('/view_user/<int:user_id>', methods=['GET'])
