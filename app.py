@@ -103,7 +103,6 @@ def dashboard():
         flash('An error occurred while loading the dashboard.', 'danger')
         return redirect(url_for('login'))
 
-
 @app.route('/add_user', methods=['GET', 'POST'])
 @login_required
 def add_user():
@@ -473,26 +472,23 @@ def set_period(user_id):
     if current_user.role != 'admin':
         flash('Unauthorized access', 'danger')
         return redirect(url_for('dashboard'))
-
+    
     user = User.query.get_or_404(user_id)
-    form = AddPeriodForm()
-
+    form = AddPeriodForm(user_id=user.id)
+    
     if form.validate_on_submit():
-        # Set all other periods for this user to not current
-        Period.query.filter_by(user_id=user.id).update({"is_current": False})
-
         period = Period(
             start_date=form.start_date.data,
             end_date=form.end_date.data,
             user_id=user.id,
-            is_current=True
+            is_current=form.is_current.data
         )
         db.session.add(period)
         db.session.commit()
-        flash('Current period set successfully', 'success')
-        return redirect(url_for('view_user', user_id=user.id))
+        flash('Period added successfully', 'success')
+        return redirect(url_for('dashboard'))
     
-    return render_template('set_period.html', form=form, user=user)
+    return render_template('add_period.html', form=form)
 
 @app.route('/set_session')
 def set_session():
