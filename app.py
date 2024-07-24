@@ -394,7 +394,7 @@ def view_user_period():
     hire_date = user.start_date
     current_date = datetime.utcnow()
     period_year = request.args.get('period_year', current_date.year, type=int)
-    
+
     if current_date.month >= hire_date.month:
         period_start = datetime(period_year, hire_date.month, 1)
         period_end = datetime(period_year + 1, hire_date.month, 1) - timedelta(days=1)
