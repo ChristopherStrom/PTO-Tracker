@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, DateField, FloatField, SelectField, TextAreaField, HiddenField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, DateField, FloatField, SelectField, TextAreaField, IntegerField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from models import User
 from datetime import datetime, timedelta
@@ -32,19 +32,16 @@ class TimeOffForm(FlaskForm):
     end_date = DateField('End Date', format='%Y-%m-%d', validators=[DataRequired()])
     total_hours = FloatField('Total Hours', validators=[DataRequired()])
     reason = SelectField('Reason', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
-    period_id = HiddenField('Period ID', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
 class AddTimeForm(FlaskForm):
     category = SelectField('Category', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
     hours = FloatField('Hours', validators=[DataRequired()])
-    period_id = HiddenField('Period ID', validators=[DataRequired()])
     submit = SubmitField('Add Time')
 
 class EditBucketForm(FlaskForm):
     category = SelectField('Category', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
     new_value = FloatField('New Value', validators=[DataRequired()])
-    period_id = HiddenField('Period ID', validators=[DataRequired()])
     submit = SubmitField('Update Bucket')
 
 class NoteForm(FlaskForm):
@@ -52,6 +49,8 @@ class NoteForm(FlaskForm):
     submit = SubmitField('Add Note')
 
 class AddPeriodForm(FlaskForm):
-    start_date = DateField('Start Date', format='%Y-%m-%d', validators=[DataRequired()])
-    end_date = DateField('End Date', format='%Y-%m-%d', validators=[DataRequired()])
+    start_date = DateField('Start Date', validators=[DataRequired()])
+    end_date = DateField('End Date', validators=[DataRequired()])
+    user_id = IntegerField('User ID', validators=[DataRequired()])
+    is_current = BooleanField('Is Current')
     submit = SubmitField('Add Period')
