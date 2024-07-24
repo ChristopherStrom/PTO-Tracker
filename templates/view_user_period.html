@@ -46,7 +46,10 @@
         <a href="{{ url_for('add_time_off', user_id=user.id) }}" class="btn btn-warning">Add Time Off</a>
         {% if current_user.role == 'admin' %}
             <a href="{{ url_for('add_time', user_id=user.id) }}" class="btn btn-success">Add Time to Buckets</a>
-            <a href="{{ url_for('reset_period', user_id=user.id) }}" class="btn btn-danger">Reset Period</a>
+            <form method="POST" action="{{ url_for('reset_period', user_id=user.id) }}" style="display:inline;">
+                {{ form.hidden_tag() }}
+                <button type="submit" class="btn btn-danger">Reset Period</button>
+            </form>
         {% endif %}
     </div>
     <div class="col-md-4">
