@@ -185,6 +185,7 @@ def view_user():
         year = max(years)  # Default to the most recent year if no year is selected
 
     time_offs = TimeOff.query.filter_by(user_id=user_id).filter(db.extract('year', TimeOff.date) == year).order_by(TimeOff.date.desc()).all()
+    bucket_changes = BucketChange.query.filter_by(user_id=user_id).order_by(BucketChange.date.desc()).all()
     notes = Note.query.filter_by(user_id=user_id).order_by(Note.date.desc()).all()
 
     # PDF export
