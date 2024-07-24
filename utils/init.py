@@ -1,7 +1,14 @@
-# init.py
+# utils/init.py
+
+import sys
+import os
+from werkzeug.security import generate_password_hash
+
+# Ensure the app's path is in the system path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from app import app, db
 from models import User
-from werkzeug.security import generate_password_hash
 
 def create_admin(username, password):
     with app.app_context():
