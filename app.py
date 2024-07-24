@@ -1,14 +1,14 @@
+# app.py
 from datetime import datetime, timedelta
 from flask import Flask, render_template, url_for, flash, redirect, request, session, make_response
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user, login_required
 from flask_migrate import Migrate
 from config import Config
-from models import db, login_manager, User, TimeOff, BucketChange, Note, Period
-from forms import LoginForm, AddUserForm, EditUserForm, TimeOffForm, AddTimeForm, EditBucketForm, NoteForm, AddPeriodForm
+from models import db, User, TimeOff, BucketChange, Note, Period
+from forms import LoginForm, AddUserForm, EditUserForm, TimeOffForm, AddTimeForm, EditBucketForm, NoteForm, AddPeriodForm, HiddenForm
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import func
-from wtforms import HiddenField
 from flask_wtf import FlaskForm
 from weasyprint import HTML
 import random
@@ -20,7 +20,8 @@ app = Flask(__name__)
 app.config.from_object(Config)
 
 db.init_app(app)
-login_manager.init_app(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
 csrf = CSRFProtect(app)
 migrate = Migrate(app, db)
 
@@ -29,6 +30,7 @@ logging.basicConfig(level=logging.INFO)
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
 @app.route('/')
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -199,7 +201,6 @@ def view_user(user_id):
         emergency_total=emergency_total, 
         vacation_total=vacation_total
     )
-
 
 @app.route('/add_note/<int:user_id>', methods=['POST'])
 @login_required
@@ -422,7 +423,7 @@ def delete_period(period_id):
     flash('Period deleted successfully', 'success')
     return redirect(url_for('view_user_period', user_id=user_id))
 
-@app.route('/set_period/<int:user_id>', methods=['POST'])
+@app.route('/set_period/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def set_period(user_id):
     if current_user.role != 'admin':
@@ -450,7 +451,6 @@ def set_period(user_id):
     db.session.commit()
     flash('Current period set successfully', 'success')
     return redirect(url_for('view_user', user_id=user_id))
-
 
 @app.route('/set_session')
 def set_session():
