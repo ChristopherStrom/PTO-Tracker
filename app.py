@@ -393,16 +393,16 @@ def view_user_period():
     # Calculate periods based on hire date
     hire_date = user.start_date
     current_date = datetime.utcnow()
-    current_year = current_date.year
-
+    period_year = request.args.get('period_year', current_date.year, type=int)
+    
     if current_date.month >= hire_date.month:
-        period_start = datetime(current_year, hire_date.month, 1)
+        period_start = datetime(period_year, hire_date.month, 1)
+        period_end = datetime(period_year + 1, hire_date.month, 1) - timedelta(days=1)
     else:
-        period_start = datetime(current_year - 1, hire_date.month, 1)
+        period_start = datetime(period_year - 1, hire_date.month, 1)
+        period_end = datetime(period_year, hire_date.month, 1) - timedelta(days=1)
 
-    period_end = (period_start.replace(year=period_start.year + 1) - timedelta(days=1)).replace(day=1) - timedelta(days=1)
-
-    # Fetch time offs and bucket changes for the current period
+    # Fetch time offs and bucket changes for the selected period
     time_offs = TimeOff.query.filter(
         TimeOff.user_id == user.id,
         TimeOff.date >= period_start,
@@ -434,7 +434,7 @@ def view_user_period():
                            notes=Note.query.filter_by(user_id=user_id).order_by(Note.date.desc()).all(),
                            periods=periods,
                            current_period=f'{period_start.year}-{period_end.year}')
-    
+
 @app.route('/reset_period/<int:user_id>', methods=['POST'])
 @login_required
 def reset_period(user_id):
