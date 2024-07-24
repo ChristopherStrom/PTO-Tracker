@@ -6,12 +6,13 @@
             <form method="GET" action="{{ url_for('view_user') }}" class="form-inline mb-3">
                 <div class="form-group">
                     <label for="user_select" class="mr-2">Select User:</label>
-                    <select id="user_select" name="user_id" class="form-control" onchange="this.form.submit()">
+                    <select id="user_select" name="user_id" class="form-control mr-2" onchange="this.form.submit()">
                         {% for u in all_users %}
                             <option value="{{ u.id }}" {% if u.id == user.id %}selected{% endif %}>{{ u.username }}</option>
                         {% endfor %}
                     </select>
                 </div>
+                <a href="{{ url_for('view_user', user_id=user.id, export='pdf') }}" class="btn btn-info ml-2">Export to PDF</a>
             </form>
         {% else %}
             <h2>{{ user.username }}</h2>
@@ -153,5 +154,4 @@
     {% endfor %}
 </ul>
 
-<a href="{{ url_for('view_user', user_id=user.id, year=year, export='pdf') }}" class="btn btn-info mt-4">Export PDF</a>
 {% endblock %}
