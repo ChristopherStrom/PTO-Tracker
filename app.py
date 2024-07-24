@@ -1,17 +1,17 @@
-from flask import Flask, render_template, url_for, flash, redirect, request, session, make_response
+from flask import Flask, render_template, redirect, url_for, flash, request, session, make_response
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user, login_required
+from flask_login import LoginManager, current_user, login_user, logout_user, login_required
 from config import Config
-from models import db, User, TimeOff, BucketChange, Note, Period
-from forms import LoginForm, AddUserForm, EditUserForm, TimeOffForm, AddTimeForm, EditBucketForm, NoteForm, AddPeriodForm
-from flask_wtf.csrf import CSRFProtect
+from datetime import datetime, timedelta
 from sqlalchemy import func
-from wtforms import HiddenField
-from flask_wtf import FlaskForm
-from weasyprint import HTML
 import random
 import string
 import logging
+from forms import LoginForm, AddUserForm, EditUserForm, TimeOffForm, AddTimeForm, EditBucketForm, NoteForm, AddPeriodForm
+from models import db, User, TimeOff, BucketChange, Note, Period
+from flask_wtf import FlaskForm
+from wtforms import HiddenField
+from weasyprint import HTML
 import io
 
 class HiddenForm(FlaskForm):
@@ -23,7 +23,10 @@ app.config.from_object(Config)
 db.init_app(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
+
 csrf = CSRFProtect(app)
+csrf.init_app(app)
+migrate = Migrate(app, db)
 
 logging.basicConfig(level=logging.INFO)
 
@@ -418,37 +421,6 @@ def add_period():
         return redirect(url_for('dashboard'))
     
     return render_template('add_period.html', form=form)
-    
-@app.route('/set_current_period/<int:period_id>', methods=['POST'])
-@login_required
-def set_current_period(period_id):
-    if current_user.role != 'admin':
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('dashboard'))
-
-    period = Period.query.get_or_404(period_id)
-
-    Period.query.filter_by(user_id=period.user_id).update({"is_current": False})
-
-    period.is_current = True
-    db.session.commit()
-
-    flash('Current period updated successfully', 'success')
-    return redirect(url_for('view_user_period', user_id=period.user_id))
-
-@app.route('/delete_period/<int:period_id>', methods=['POST'])
-@login_required
-def delete_period(period_id):
-    period = Period.query.get_or_404(period_id)
-    user_id = period.user_id
-    if current_user.role != 'admin' and current_user.id != user_id:
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('dashboard'))
-
-    db.session.delete(period)
-    db.session.commit()
-    flash('Period deleted successfully', 'success')
-    return redirect(url_for('view_user_period', user_id=user_id))
 
 @app.route('/set_current_period/<int:period_id>', methods=['POST'])
 @login_required
