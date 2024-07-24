@@ -12,14 +12,6 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="form-group ml-2">
-                    <label for="period_year" class="mr-2">Select Period Year:</label>
-                    <select id="period_year" name="period_year" class="form-control mr-2" onchange="this.form.submit()">
-                        {% for year in periods %}
-                            <option value="{{ year }}" {% if year == current_period_start.year %}selected{% endif %}>{{ year }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
                 <a href="{{ url_for('view_user_period', user_id=user.id, export='pdf') }}" class="btn btn-info ml-2">Export to PDF</a>
             </form>
         {% else %}
@@ -63,7 +55,7 @@
     <div class="col-md-4">
         {% if current_user.role == 'admin' %}
             <h3>Edit Buckets</h3>
-            <form method="POST" action="{{ url_for('view_user_period', user_id=user.id) }}">
+            <form method="POST" action="{{ url_for('edit_bucket', user_id=user.id) }}">
                 {{ form.hidden_tag() }}
                 <div class="form-group">
                     {{ form.category.label(class="form-label") }}
@@ -194,4 +186,39 @@
     {% endfor %}
 </ul>
 
+<h3 class="mt-4">Manage Periods</h3>
+<form method="POST" action="{{ url_for('add_period') }}">
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+        {{ form.start_date.label(class="form-label") }}
+        {{ form.start_date(class="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.end_date.label(class="form-label") }}
+        {{ form.end_date(class="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.submit(class="btn btn-primary btn-block") }}
+    </div>
+</form>
+
+<ul class="list-group mt-3">
+    {% for period in periods %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ period.start_date }} - {{ period.end_date }}
+            {% if not period.is_current %}
+                <form method="POST" action="{{ url_for('set_current_period', period_id=period.id) }}" style="display:inline;">
+                    {{ form.hidden_tag() }}
+                    <button type="submit" class="btn btn-info btn-sm">Set Current</button>
+                </form>
+                <form method="POST" action="{{ url_for('delete_period', period_id=period.id) }}" style="display:inline;">
+                    {{ form.hidden_tag() }}
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            {% else %}
+                <span class="badge badge-success">Current</span>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
 {% endblock %}
