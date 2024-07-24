@@ -383,7 +383,7 @@ def update_status(user_id):
     
     return redirect(url_for('dashboard'))
 
-@app.route('/view_user_period', methods=['GET'])
+@app.route('/view_user_period', methods=['GET', 'POST'])
 @login_required
 def view_user_period():
     user_id = request.args.get('user_id', current_user.id, type=int)
@@ -421,6 +421,9 @@ def view_user_period():
 
     edit_bucket_form = EditBucketForm()  # Use the correct form
     note_form = NoteForm()
+
+    edit_bucket_form.period_start.data = period_start.strftime('%Y-%m-%d')
+    edit_bucket_form.period_end.data = period_end.strftime('%Y-%m-%d')
 
     return render_template('view_user_period.html', 
                            user=user, 
