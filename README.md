@@ -11,6 +11,7 @@ The PTO Tracker is a web application designed to help organizations manage emplo
 - **Bucket Changes**: Track changes in the available hours for each category.
 - **User Roles**: Differentiate between admin and regular user functionalities.
 - **Reporting**: View detailed reports of time off and bucket changes.
+- **PDF Export**: Generate PDF reports of time off history and current PTO and bucket totals.
 
 ## Installation
 
@@ -20,6 +21,7 @@ The PTO Tracker is a web application designed to help organizations manage emplo
 - `pip` (Python package installer)
 - `virtualenv` (Python virtual environment tool)
 - SQLite (included with Python)
+- WeasyPrint
 
 ### Steps
 
@@ -49,14 +51,19 @@ The PTO Tracker is a web application designed to help organizations manage emplo
     pip install -r requirements.txt
     ```
 
-5. **Set up the database**:
+5. **Install WeasyPrint**:
+    ```sh
+    sudo apt-get install -y weasyprint
+    ```
+
+6. **Set up the database**:
     ```sh
     flask db init
     flask db migrate -m "Initial migration."
     flask db upgrade
     ```
 
-6. **Run the application**:
+7. **Run the application**:
     ```sh
     flask run
     ```
@@ -81,6 +88,10 @@ The PTO Tracker is a web application designed to help organizations manage emplo
 
 1. **Edit User**: Admins can edit user details by navigating to the "Edit User" page.
 ![Edit User](images/edit_user.png)
+
+### Generating Reports
+
+1. **Export to PDF**: Admins can generate a PDF report of a user's time off history and current PTO and bucket totals. This option is available next to the user selection dropdown on the user details page.
 
 ## Sample Data
 
