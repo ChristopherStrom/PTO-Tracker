@@ -76,9 +76,9 @@ def dashboard():
             used_emergency_hours = db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user.id, reason='emergency').scalar() or 0
             used_vacation_hours = db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user.id, reason='vacation').scalar() or 0
 
-            pto_total = initial_pto_total - used_pto_hours
-            emergency_total = initial_emergency_total - used_emergency_hours
-            vacation_total = initial_vacation_total - used_vacation_hours
+            pto_total = round(initial_pto_total - used_pto_hours, 2)
+            emergency_total = round(initial_emergency_total - used_emergency_hours, 2)
+            vacation_total = round(initial_vacation_total - used_vacation_hours, 2)
 
             user_data.append({
                 'user': user,
