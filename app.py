@@ -412,36 +412,6 @@ def reset_period(user_id):
         emergency_total=user.emergency_hours,
         vacation_total=user.vacation_hours,
         period_start=period_start,
-        period_end
-
-@app.route('/reset_period/<int:user_id>', methods=['POST'])
-@login_required
-def reset_period(user_id):
-    if current_user.role != 'admin':
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('dashboard'))
-
-    user = User.query.get_or_404(user_id)
-
-    # Get current date
-    current_date = datetime.utcnow()
-
-    # Calculate new period start and end based on hire date
-    hire_date = user.start_date
-    if current_date.month == hire_date.month:
-        period_start = datetime(current_date.year, hire_date.month, 1)
-        period_end = datetime(current_date.year + 1, hire_date.month - 1, 1) - timedelta(days=1)
-    else:
-        period_start = datetime(current_date.year, hire_date.month, 1)
-        period_end = datetime(current_date.year + 1, hire_date.month - 1, 1) - timedelta(days=1)
-
-    # Archive current period totals
-    archive = PeriodArchive(
-        user_id=user.id,
-        pto_total=user.pto_hours,
-        emergency_total=user.emergency_hours,
-        vacation_total=user.vacation_hours,
-        period_start=period_start,
         period_end=period_end
     )
     db.session.add(archive)
