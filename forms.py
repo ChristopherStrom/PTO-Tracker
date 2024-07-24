@@ -37,13 +37,15 @@ class TimeOffForm(FlaskForm):
 class AddTimeForm(FlaskForm):
     category = SelectField('Category', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
     hours = FloatField('Hours', validators=[DataRequired()])
+    period_start = HiddenField('Period Start')
+    period_end = HiddenField('Period End')
     submit = SubmitField('Add Time')
 
 class EditBucketForm(FlaskForm):
     category = SelectField('Category', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
     new_value = FloatField('New Value', validators=[DataRequired()])
-    period_start = HiddenField()
-    period_end = HiddenField()
+    period_start = HiddenField('Period Start')
+    period_end = HiddenField('Period End')
     submit = SubmitField('Update Bucket')
 
 class NoteForm(FlaskForm):
