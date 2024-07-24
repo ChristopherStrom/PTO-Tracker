@@ -1,52 +1,42 @@
-<!-- edit_user.html -->
 {% extends "base.html" %}
-{% block title %}Edit User{% endblock %}
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">Edit User</div>
-            <div class="card-body">
-                <form method="POST">
-                    {{ form.hidden_tag() }}
-                    <div class="form-group">
-                        {{ form.username.label(class="form-label") }}
-                        {{ form.username(class="form-control") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.birth_date.label(class="form-label") }}
-                        {{ form.birth_date(class="form-control") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.start_date.label(class="form-label") }}
-                        {{ form.start_date(class="form-control") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.status.label(class="form-label") }}
-                        {{ form.status(class="form-control") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.role.label(class="form-label") }}
-                        {{ form.role(class="form-control") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.password.label(class="form-label") }}
-                        {{ form.password(class="form-control") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.period_start_date.label(class="form-label") }}
-                        {{ form.period_start_date(class="form-control") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.period_end_date.label(class="form-label") }}
-                        {{ form.period_end_date(class="form-control") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.submit(class="btn btn-primary btn-block") }}
-                    </div>
-                </form>
-            </div>
+<div class="container">
+    <h2>Edit User</h2>
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.username.label(class="form-label") }}
+            {{ form.username(class="form-control") }}
         </div>
-    </div>
+        <div class="form-group">
+            {{ form.birth_date.label(class="form-label") }}
+            {{ form.birth_date(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.start_date.label(class="form-label") }}
+            {{ form.start_date(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.status.label(class="form-label") }}
+            {{ form.status(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.role.label(class="form-label") }}
+            {{ form.role(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.password.label(class="form-label") }}
+            {{ form.password(class="form-control") }}
+        </div>
+        <div class="form-group">
+            <label for="period_start_date" class="form-label">Period Start Date</label>
+            <input type="date" id="period_start_date" name="period_start_date" class="form-control" value="{{ period_start_date }}">
+        </div>
+        <div class="form-group">
+            <label for="period_end_date" class="form-label">Period End Date</label>
+            <input type="date" id="period_end_date" name="period_end_date" class="form-control" value="{{ period_end_date }}">
+        </div>
+        <button type="submit" class="btn btn-primary">Update User</button>
+    </form>
 </div>
 {% endblock %}
