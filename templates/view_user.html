@@ -1,4 +1,3 @@
-<!-- view_user.html -->
 {% extends "base.html" %}
 {% block content %}
 <div class="row">
@@ -18,9 +17,9 @@
         {% else %}
             <h2>{{ user.username }}</h2>
         {% endif %}
-      <form method="POST" action="{{ url_for('set_period', user_id=user.id) }}">
-        <button type="submit" class="btn btn-secondary">Set Current Period</button>
-      </form>
+        <form method="POST" action="{{ url_for('set_period', user_id=user.id) }}">
+            <button type="submit" class="btn btn-secondary">Set Current Period</button>
+        </form>
         <ul class="list-group mb-3">
             <li class="list-group-item"><strong>Start Date:</strong> {{ user.start_date }}</li>
             <li class="list-group-item"><strong>Birth Date:</strong> {{ user.birth_date }}</li>
