@@ -1,6 +1,5 @@
-# app.py
 from datetime import datetime, timedelta
-from flask import Flask, render_template, url_for, flash, redirect, request, session
+from flask import Flask, render_template, url_for, flash, redirect, request, session, make_response
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user, login_required
 from flask_migrate import Migrate
@@ -11,9 +10,11 @@ from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import func
 from wtforms import HiddenField
 from flask_wtf import FlaskForm
+from weasyprint import HTML
 import random
 import string
 import logging
+import io
 
 class HiddenForm(FlaskForm):
     csrf_token = HiddenField()
@@ -27,6 +28,10 @@ csrf = CSRFProtect(app)
 migrate = Migrate(app, db)
 
 logging.basicConfig(level=logging.INFO)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 @app.route('/')
 @app.route('/login', methods=['GET', 'POST'])
@@ -59,29 +64,26 @@ def dashboard():
         else:
             users = [current_user]
 
-        # Calculate PTO, Emergency, and Vacation hours for each user
         user_data = []
         for user in users:
-            current_period = Period.query.filter_by(user_id=user.id, is_current=True).first()
-            if current_period:
-                initial_pto_total = db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user.id, category='pto', period_id=current_period.id).scalar() or 0
-                initial_emergency_total = db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user.id, category='emergency', period_id=current_period.id).scalar() or 0
-                initial_vacation_total = db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user.id, category='vacation', period_id=current_period.id).scalar() or 0
+            initial_pto_total = db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user.id, category='pto').scalar() or 0
+            initial_emergency_total = db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user.id, category='emergency').scalar() or 0
+            initial_vacation_total = db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user.id, category='vacation').scalar() or 0
 
-                used_pto_hours = db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user.id, reason='pto', period_id=current_period.id).scalar() or 0
-                used_emergency_hours = db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user.id, reason='emergency', period_id=current_period.id).scalar() or 0
-                used_vacation_hours = db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user.id, reason='vacation', period_id=current_period.id).scalar() or 0
+            used_pto_hours = db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user.id, reason='pto').scalar() or 0
+            used_emergency_hours = db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user.id, reason='emergency').scalar() or 0
+            used_vacation_hours = db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user.id, reason='vacation').scalar() or 0
 
-                pto_total = round(initial_pto_total - used_pto_hours, 2)
-                emergency_total = round(initial_emergency_total - used_emergency_hours, 2)
-                vacation_total = round(initial_vacation_total - used_vacation_hours, 2)
+            pto_total = round(initial_pto_total - used_pto_hours, 2)
+            emergency_total = round(initial_emergency_total - used_emergency_hours, 2)
+            vacation_total = round(initial_vacation_total - used_vacation_hours, 2)
 
-                user_data.append({
-                    'user': user,
-                    'pto_total': pto_total,
-                    'emergency_total': emergency_total,
-                    'vacation_total': vacation_total
-                })
+            user_data.append({
+                'user': user,
+                'pto_total': pto_total,
+                'emergency_total': emergency_total,
+                'vacation_total': vacation_total
+            })
 
         form = HiddenForm()
 
@@ -104,14 +106,6 @@ def add_user():
         user.set_password(hashed_password)
         db.session.add(user)
         db.session.commit()
-
-        # Create initial period for the user
-        start_date = form.start_date.data
-        end_date = start_date + timedelta(days=365)
-        period = Period(start_date=start_date, end_date=end_date, user_id=user.id, is_current=True)
-        db.session.add(period)
-        db.session.commit()
-
         flash(f'User {form.username.data} added with password {hashed_password}', 'success')
         return redirect(url_for('dashboard'))
     return render_template('add_user.html', form=form)
@@ -151,7 +145,6 @@ def view_user():
     year = request.args.get('year', None, type=int)
 
     if form.validate_on_submit():
-        current_period = Period.query.filter_by(user_id=user_id, is_current=True).first()
         old_value = 0
         if form.category.data == 'pto':
             old_value = user.pto_hours
@@ -171,7 +164,6 @@ def view_user():
     
     current_period = Period.query.filter_by(user_id=user_id, is_current=True).first()
     
-    # Calculate the totals from bucket changes and time off, rounding to 2 decimal places
     initial_pto_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='pto', period_id=current_period.id).scalar() or 0, 2)
     initial_emergency_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='emergency', period_id=current_period.id).scalar() or 0, 2)
     initial_vacation_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='vacation', period_id=current_period.id).scalar() or 0, 2)
@@ -184,9 +176,37 @@ def view_user():
     emergency_total = initial_emergency_total - used_emergency_hours
     vacation_total = initial_vacation_total - used_vacation_hours
 
+    years = db.session.query(func.extract('year', TimeOff.date)).filter_by(user_id=user_id).group_by(func.extract('year', TimeOff.date)).all()
+    years = [int(y[0]) for y in years]
+    
+    if year is None and years:
+        year = max(years)
+
     time_offs = TimeOff.query.filter_by(user_id=user_id, period_id=current_period.id).order_by(TimeOff.date.desc()).all()
     bucket_changes = BucketChange.query.filter_by(user_id=user_id, period_id=current_period.id).order_by(BucketChange.date.desc()).all()
     notes = Note.query.filter_by(user_id=user_id).order_by(Note.date.desc()).all()
+
+    if 'export' in request.args and request.args.get('export') == 'pdf':
+        rendered = render_template(
+            'export_user.html', 
+            user=user, 
+            bucket_changes=bucket_changes, 
+            time_offs=time_offs, 
+            initial_pto_total=initial_pto_total, 
+            used_pto_hours=used_pto_hours, 
+            pto_total=pto_total, 
+            initial_emergency_total=initial_emergency_total, 
+            used_emergency_hours=used_emergency_hours, 
+            emergency_total=emergency_total, 
+            initial_vacation_total=initial_vacation_total, 
+            used_vacation_hours=used_vacation_hours, 
+            vacation_total=vacation_total
+        )
+        pdf = HTML(string=rendered).write_pdf()
+        response = make_response(pdf)
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = 'inline; filename=user_details.pdf'
+        return response
 
     return render_template(
         'view_user.html', 
@@ -238,6 +258,7 @@ def delete_note(note_id):
     flash('Note deleted successfully', 'success')
     return redirect(url_for('view_user', user_id=user_id))
 
+
 @app.route('/add_time_off/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def add_time_off(user_id):
@@ -248,21 +269,20 @@ def add_time_off(user_id):
     user = User.query.get_or_404(user_id)
     if form.validate_on_submit():
         try:
-            current_period = Period.query.filter_by(user_id=user.id, is_current=True).first()
-            if current_period:
-                delta = (form.end_date.data - form.start_date.data).days + 1
-                hours_per_day = form.total_hours.data / delta
-                for i in range(delta):
-                    date = form.start_date.data + timedelta(days=i)
-                    time_off = TimeOff(date=date, hours=hours_per_day, reason=form.reason.data, user_id=user.id, period_id=current_period.id)
-                    db.session.add(time_off)
-                db.session.commit()
-                flash(f'Successfully added {form.total_hours.data} hours of {form.reason.data} for {user.username}', 'success')
-                return redirect(url_for('view_user', user_id=user.id))
+            delta = (form.end_date.data - form.start_date.data).days + 1
+            hours_per_day = form.total_hours.data / delta
+            for i in range(delta):
+                date = form.start_date.data + timedelta(days=i)
+                time_off = TimeOff(date=date, hours=hours_per_day, reason=form.reason.data, user_id=user.id, period_id=current_period.id)
+                db.session.add(time_off)
+            db.session.commit()
+            flash(f'Successfully added {form.total_hours.data} hours of {form.reason.data} for {user.username}', 'success')
+            return redirect(url_for('view_user', user_id=user.id))
         except Exception as e:
             db.session.rollback()
             flash(f'An error occurred: {e}', 'danger')
     return render_template('add_time_off.html', form=form, user=user)
+
 
 @app.route('/add_time/<int:user_id>', methods=['GET', 'POST'])
 @login_required
@@ -275,7 +295,6 @@ def add_time(user_id):
     if form.validate_on_submit():
         old_value = 0
         new_value = 0
-        current_period = Period.query.filter_by(user_id=user.id, is_current=True).first()
         if form.category.data == 'pto':
             old_value = user.pto_hours
             user.pto_hours += form.hours.data
@@ -295,6 +314,7 @@ def add_time(user_id):
         flash(f'Successfully added {form.hours.data} hours to {form.category.data} for {user.username}', 'success')
         return redirect(url_for('view_user', user_id=user.id))
     return render_template('add_time.html', form=form, user=user)
+
 
 @app.route('/delete_time_off/<int:time_off_id>', methods=['POST'])
 @login_required
@@ -364,16 +384,13 @@ def view_user_period():
     user_id = request.args.get('user_id')
     user = User.query.get_or_404(user_id)
 
-    # Get current period
     current_period = Period.query.filter_by(user_id=user_id, is_current=True).first()
     
-    # Fetch time offs for the current period
     time_offs = TimeOff.query.filter(
         TimeOff.user_id == user.id,
         TimeOff.period_id == current_period.id
     ).all()
 
-    # Fetch bucket changes for the current period
     bucket_changes = BucketChange.query.filter(
         BucketChange.user_id == user.id,
         BucketChange.period_id == current_period.id
@@ -413,10 +430,8 @@ def set_current_period(period_id):
 
     period = Period.query.get_or_404(period_id)
 
-    # Set all other periods for this user to not current
     Period.query.filter_by(user_id=period.user_id).update({"is_current": False})
 
-    # Set the selected period to current
     period.is_current = True
     db.session.commit()
 
@@ -436,6 +451,45 @@ def delete_period(period_id):
     db.session.commit()
     flash('Period deleted successfully', 'success')
     return redirect(url_for('view_user_period', user_id=user_id))
+
+@app.route('/set_current_period/<int:period_id>', methods=['POST'])
+@login_required
+def set_current_period(period_id):
+    period = Period.query.get_or_404(period_id)
+    user_id = period.user_id
+    if current_user.role != 'admin' and current_user.id != user_id:
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('dashboard'))
+
+    Period.query.filter_by(user_id=user_id).update({'is_current': False})
+    period.is_current = True
+
+    db.session.commit()
+    flash('Current period set successfully', 'success')
+    return redirect(url_for('view_user_period', user_id=user_id))
+
+@app.route('/delete_period/<int:period_id>', methods=['POST'])
+@login_required
+def delete_period(period_id):
+    if current_user.role != 'admin':
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('dashboard'))
+
+    period = Period.query.get_or_404(period_id)
+    db.session.delete(period)
+    db.session.commit()
+
+    flash('Period deleted successfully', 'success')
+    return redirect(url_for('view_user_period', user_id=period.user_id))
+
+@app.route('/set_session')
+def set_session():
+    session['test'] = 'It works!'
+    return 'Session variable set.'
+
+@app.route('/get_session')
+def get_session():
+    return session.get('test', 'Session variable not set.')
 
 @app.route('/logout')
 def logout():
