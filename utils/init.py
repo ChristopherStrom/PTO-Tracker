@@ -17,8 +17,12 @@ def create_admin(username, password):
         db.create_all()
 
         # Check if admin user already exists
-        if not User.query.filter_by(username=username).first():
-            # Create admin user
+        admin = User.query.filter_by(username=username).first()
+        if admin:
+            admin.set_password(password)
+            print(f"Admin user '{username}' already exists. Password has been updated.")
+        else:
+            # Create new admin user
             admin = User(
                 username=username,
                 password_hash=generate_password_hash(password),
@@ -28,10 +32,11 @@ def create_admin(username, password):
                 role='admin'
             )
             db.session.add(admin)
-            db.session.commit()
             print(f"Admin user '{username}' created successfully.")
-        else:
-            print(f"Admin user '{username}' already exists.")
+        
+        db.session.commit()
+        print(f"Username: {username}")
+        print(f"Password: {password}")
 
 if __name__ == '__main__':
     admin_username = 'admin'  # Change this to your desired admin username
