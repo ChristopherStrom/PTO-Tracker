@@ -398,12 +398,8 @@ def reset_period(user_id):
 
     # Calculate new period start and end based on hire date
     hire_date = user.start_date
-    if current_date.month == hire_date.month:
-        period_start = datetime(current_date.year, hire_date.month, 1)
-        period_end = datetime(current_date.year + 1, hire_date.month - 1, 1) - timedelta(days=1)
-    else:
-        period_start = datetime(current_date.year, hire_date.month, 1)
-        period_end = datetime(current_date.year + 1, hire_date.month - 1, 1) - timedelta(days=1)
+    period_start = datetime(current_date.year, hire_date.month, 1)
+    period_end = (period_start.replace(year=period_start.year + 1) - timedelta(days=1)).replace(day=1) - timedelta(days=1)
 
     # Archive current period totals
     archive = PeriodArchive(
@@ -425,8 +421,6 @@ def reset_period(user_id):
 
     flash('Period reset successfully.', 'success')
     return redirect(url_for('view_user_period', user_id=user.id))
-
-
 
 @app.route('/set_session')
 def set_session():
