@@ -410,15 +410,20 @@ def set_period(user_id):
     current_period = Period.query.filter_by(user_id=user.id, is_current=True).first()
 
     if not current_period:
-        period_start = date(user.start_date.year, user.start_date.month, 1)
-        period_end = (period_start.replace(month=period_start.month % 12 + 1) - timedelta(days=1)).replace(day=1) - timedelta(days=1)
-        new_period = Period(start_date=period_start, end_date=period_end, user_id=user.id, is_current=True)
+        period_start = user.start_date.replace(day=1)
+        period_end = (period_start + relativedelta(months=11)).replace(day=31)
+        new_period = Period(
+            start_date=period_start,
+            end_date=period_end,
+            is_current=True,
+            user_id=user.id
+        )
         db.session.add(new_period)
         db.session.commit()
-        flash('Current period set successfully.', 'success')
+        flash('Period set successfully.', 'success')
     else:
         flash('Current period already set.', 'info')
-    
+
     return redirect(url_for('view_user', user_id=user.id))
 
 @app.route('/set_session')
