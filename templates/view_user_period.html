@@ -63,7 +63,7 @@
     <div class="col-md-4">
         {% if current_user.role == 'admin' %}
             <h3>Edit Buckets</h3>
-            <form method="POST">
+            <form method="POST" action="{{ url_for('view_user_period', user_id=user.id) }}">
                 {{ form.hidden_tag() }}
                 <div class="form-group">
                     {{ form.category.label(class="form-label") }}
@@ -74,14 +74,32 @@
                     {{ form.new_value(class="form-control") }}
                 </div>
                 <div class="form-group">
+                    {{ form.period_start.label(class="form-label") }}
+                    {{ form.period_start(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.period_end.label(class="form-label") }}
+                    {{ form.period_end(class="form-control") }}
+                </div>
+                <div class="form-group">
                     {{ form.submit(class="btn btn-primary btn-block") }}
                 </div>
             </form>
         {% endif %}
     </div>
 </div>
-
 <h3 class="mt-4">Time Off History</h3>
+<form method="GET" action="{{ url_for('view_user_period', user_id=user.id) }}">
+    <div class="form-group">
+        <label for="period">Filter by Period</label>
+        <select id="period" name="period_year" class="form-control" onchange="this.form.submit()">
+            {% for period in periods %}
+                <option value="{{ period }}" {% if period == current_period %}selected{% endif %}>{{ period }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <input type="hidden" name="user_id" value="{{ user.id }}">
+</form>
 <table class="table table-bordered">
     <thead>
         <tr>
