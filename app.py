@@ -190,7 +190,7 @@ def view_user():
         response.headers['Content-Disposition'] = 'inline; filename=user_details.pdf'
         return response
 
-    return render_template('view_user.html'
+    return render_template('view_user.html')
                            
 @app.route('/add_note/<int:user_id>', methods=['POST'])
 @login_required
