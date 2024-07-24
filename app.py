@@ -383,48 +383,29 @@ def update_status(user_id):
     
     return redirect(url_for('dashboard'))
 
-@app.route('/view_user_period', methods=['GET', 'POST'])
+@app.route('/view_user_period', methods=['GET'])
 @login_required
 def view_user_period():
-    user_id = request.args.get('user_id', current_user.id, type=int)
+    user_id = request.args.get('user_id')
     user = User.query.get_or_404(user_id)
-    all_users = User.query.order_by(func.lower(User.username)).all() if current_user.role == 'admin' else [current_user]
 
-    # Fetch current period
-    current_period = Period.query.filter_by(user_id=user.id, is_current=True).first()
+    # Get current period
+    current_period = Period.query.filter_by(user_id=user_id, is_current=True).first()
     
-    # Fetch time offs and bucket changes for the current period
+    # Fetch time offs for the current period
     time_offs = TimeOff.query.filter(
         TimeOff.user_id == user.id,
         TimeOff.period_id == current_period.id
     ).all()
 
+    # Fetch bucket changes for the current period
     bucket_changes = BucketChange.query.filter(
         BucketChange.user_id == user.id,
         BucketChange.period_id == current_period.id
     ).all()
 
-    # Determine all periods for the user
-    periods = Period.query.filter_by(user_id=user.id).all()
-
-    edit_bucket_form = EditBucketForm()
-    note_form = NoteForm()
-
-    # Set current period dates for the forms
-    edit_bucket_form.period_start.data = current_period.start_date.strftime('%Y-%m-%d')
-    edit_bucket_form.period_end.data = current_period.end_date.strftime('%Y-%m-%d')
-
-    return render_template('view_user_period.html', 
-                           user=user, 
-                           all_users=all_users,
-                           form=edit_bucket_form, 
-                           note_form=note_form,
-                           current_period_start=current_period.start_date, 
-                           current_period_end=current_period.end_date,
-                           time_offs=time_offs, 
-                           bucket_changes=bucket_changes,
-                           notes=Note.query.filter_by(user_id=user_id).order_by(Note.date.desc()).all(),
-                           periods=periods)
+    return render_template('view_user_period.html', user=user, time_offs=time_offs, bucket_changes=bucket_changes,
+                           current_period=current_period)
 
 @app.route('/add_period', methods=['GET', 'POST'])
 @login_required
@@ -435,16 +416,37 @@ def add_period():
     
     form = AddPeriodForm()
     if form.validate_on_submit():
-        start_date = form.start_date.data
-        end_date = form.end_date.data
-        user_id = request.args.get('user_id', current_user.id, type=int)
-
-        period = Period(start_date=start_date, end_date=end_date, user_id=user_id)
+        period = Period(
+            start_date=form.start_date.data,
+            end_date=form.end_date.data,
+            user_id=form.user_id.data,
+            is_current=form.is_current.data
+        )
         db.session.add(period)
         db.session.commit()
-        flash('Period added successfully.', 'success')
-        return redirect(url_for('view_user_period', user_id=user_id))
+        flash('Period added successfully', 'success')
+        return redirect(url_for('dashboard'))
+    
     return render_template('add_period.html', form=form)
+    
+@app.route('/set_current_period/<int:period_id>', methods=['POST'])
+@login_required
+def set_current_period(period_id):
+    if current_user.role != 'admin':
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('dashboard'))
+
+    period = Period.query.get_or_404(period_id)
+
+    # Set all other periods for this user to not current
+    Period.query.filter_by(user_id=period.user_id).update({"is_current": False})
+
+    # Set the selected period to current
+    period.is_current = True
+    db.session.commit()
+
+    flash('Current period updated successfully', 'success')
+    return redirect(url_for('view_user_period', user_id=period.user_id))
 
 @app.route('/delete_period/<int:period_id>', methods=['POST'])
 @login_required
@@ -477,48 +479,19 @@ def set_current_period(period_id):
     flash('Current period set successfully', 'success')
     return redirect(url_for('view_user_period', user_id=user_id))
 
-@app.route('/reset_period/<int:user_id>', methods=['POST'])
+@app.route('/delete_period/<int:period_id>', methods=['POST'])
 @login_required
-def reset_period(user_id):
+def delete_period(period_id):
     if current_user.role != 'admin':
         flash('Unauthorized access', 'danger')
         return redirect(url_for('dashboard'))
 
-    user = User.query.get_or_404(user_id)
-
-    # Get current date
-    current_date = datetime.utcnow()
-    current_year = current_date.year
-
-    # Calculate new period start and end based on hire date
-    hire_date = user.start_date
-    if current_date.month >= hire_date.month:
-        period_start = datetime(current_year, hire_date.month, 1)
-    else:
-        period_start = datetime(current_year - 1, hire_date.month, 1)
-        
-    period_end = (period_start.replace(year=period_start.year + 1) - timedelta(days=1)).replace(day=1) - timedelta(days=1)
-
-    # Archive current period totals
-    archive = PeriodArchive(
-        user_id=user.id,
-        pto_total=user.pto_hours,
-        emergency_total=user.emergency_hours,
-        vacation_total=user.vacation_hours,
-        period_start=period_start,
-        period_end=period_end
-    )
-    db.session.add(archive)
-
-    # Reset current totals
-    user.pto_hours = 0
-    user.emergency_hours = 0
-    user.vacation_hours = 0
-
+    period = Period.query.get_or_404(period_id)
+    db.session.delete(period)
     db.session.commit()
 
-    flash('Period reset successfully.', 'success')
-    return redirect(url_for('view_user_period', user_id=user.id))
+    flash('Period deleted successfully', 'success')
+    return redirect(url_for('view_user_period', user_id=period.user_id))
 
 @app.route('/set_session')
 def set_session():
