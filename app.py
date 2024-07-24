@@ -1,11 +1,11 @@
+from datetime import datetime, timedelta
 from flask import Flask, render_template, url_for, flash, redirect, request, session, make_response
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user, login_required
 from flask_migrate import Migrate
 from config import Config
-from models import db, login_manager, User, TimeOff, BucketChange, Note
+from models import db, login_manager, User, TimeOff, BucketChange, Note, PeriodArchive
 from forms import LoginForm, AddUserForm, EditUserForm, TimeOffForm, AddTimeForm, EditBucketForm, NoteForm
-from datetime import datetime, timedelta
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import func
 from wtforms import HiddenField
@@ -15,7 +15,6 @@ import random
 import string
 import logging
 import io
-
 
 class HiddenForm(FlaskForm):
     csrf_token = HiddenField()
@@ -387,23 +386,29 @@ def update_status(user_id):
 @app.route('/view_user_period', methods=['GET'])
 @login_required
 def view_user_period():
-    user_id = request.args.get('user_id')
+    user_id = request.args.get('user_id', current_user.id, type=int)
     user = User.query.get_or_404(user_id)
 
     # Calculate periods based on hire date
     hire_date = user.start_date
     current_date = datetime.utcnow()
-    period_start = datetime(current_date.year, hire_date.month, 1)
+    current_year = current_date.year
+
+    # Determine the period start and end dates
+    if current_date.month >= hire_date.month:
+        period_start = datetime(current_year, hire_date.month, 1)
+    else:
+        period_start = datetime(current_year - 1, hire_date.month, 1)
+
     period_end = (period_start.replace(year=period_start.year + 1) - timedelta(days=1)).replace(day=1) - timedelta(days=1)
 
-    # Fetch time offs for the current period
+    # Fetch time offs and bucket changes for the current period
     time_offs = TimeOff.query.filter(
         TimeOff.user_id == user.id,
         TimeOff.date >= period_start,
         TimeOff.date <= period_end
     ).all()
 
-    # Fetch bucket changes for the current period
     bucket_changes = BucketChange.query.filter(
         BucketChange.user_id == user.id,
         BucketChange.date >= period_start,
@@ -424,10 +429,15 @@ def reset_period(user_id):
 
     # Get current date
     current_date = datetime.utcnow()
+    current_year = current_date.year
 
     # Calculate new period start and end based on hire date
     hire_date = user.start_date
-    period_start = datetime(current_date.year, hire_date.month, 1)
+    if current_date.month >= hire_date.month:
+        period_start = datetime(current_year, hire_date.month, 1)
+    else:
+        period_start = datetime(current_year - 1, hire_date.month, 1)
+        
     period_end = (period_start.replace(year=period_start.year + 1) - timedelta(days=1)).replace(day=1) - timedelta(days=1)
 
     # Archive current period totals
