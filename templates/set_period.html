@@ -10,6 +10,9 @@
     <div class="form-group">
       {{ form.end_date.label }} {{ form.end_date(size=20, class_="form-control") }}
     </div>
+    <div class="form-group">
+      {{ form.is_current.label }} {{ form.is_current() }}
+    </div>
     <button type="submit" class="btn btn-primary">Set Period</button>
   </form>
   <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
