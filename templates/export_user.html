@@ -38,27 +38,5 @@
             {% endfor %}
         </tbody>
     </table>
-
-    <h3>Bucket Changes</h3>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Category</th>
-                <th>Old Value</th>
-                <th>New Value</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for change in bucket_changes %}
-                <tr>
-                    <td>{{ change.date }}</td>
-                    <td>{{ change.category }}</td>
-                    <td>{{ change.old_value }}</td>
-                    <td>{{ change.new_value }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
 </body>
 </html>
