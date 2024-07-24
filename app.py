@@ -143,6 +143,12 @@ def view_user():
     note_form = NoteForm()
     year = request.args.get('year', None, type=int)
 
+    # Fetch the current period
+    current_period = Period.query.filter_by(user_id=user_id, is_current=True).first()
+    if not current_period:
+        flash('No current period set for this user. Please set a current period first.', 'danger')
+        return redirect(url_for('dashboard'))
+
     if form.validate_on_submit():
         old_value = 0
         if form.category.data == 'pto':
@@ -160,9 +166,7 @@ def view_user():
         db.session.commit()
         flash(f'{form.category.data.capitalize()} hours updated to {form.new_value.data}', 'success')
         return redirect(url_for('view_user', user_id=user.id, year=year))
-    
-    current_period = Period.query.filter_by(user_id=user_id, is_current=True).first()
-    
+
     initial_pto_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='pto', period_id=current_period.id).scalar() or 0, 2)
     initial_emergency_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='emergency', period_id=current_period.id).scalar() or 0, 2)
     initial_vacation_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='vacation', period_id=current_period.id).scalar() or 0, 2)
