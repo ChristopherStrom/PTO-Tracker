@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Set Current Period for {{ user.username }}</h2>
+  <form method="POST" action="{{ url_for('set_period', user_id=user.id) }}">
+    {{ form.hidden_tag() }}
+    <div class="form-group">
+      {{ form.start_date.label }} {{ form.start_date(size=20, class_="form-control") }}
+    </div>
+    <div class="form-group">
+      {{ form.end_date.label }} {{ form.end_date(size=20, class_="form-control") }}
+    </div>
+    <button type="submit" class="btn btn-primary">Set Period</button>
+  </form>
+  <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+{% endblock %}
