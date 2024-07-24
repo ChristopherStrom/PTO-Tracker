@@ -1,51 +1,53 @@
-{% extends "base.html" %}
-
-{% block content %}
-  <h2>Dashboard</h2>
-  <a href="{{ url_for('logout') }}">Logout</a>
-  <p>Welcome, {{ current_user.username }}</p>
-  <form method="GET" action="{{ url_for('dashboard') }}">
-    <label for="role">Filter by role:</label>
-    <select id="role" name="role">
-      <option value="all" {% if filter_role == 'all' %}selected{% endif %}>All</option>
-      <option value="admin" {% if filter_role == 'admin' %}selected{% endif %}>Admin</option>
-      <option value="active" {% if filter_role == 'active' %}selected{% endif %}>Active</option>
-      <option value="inactive" {% if filter_role == 'inactive' %}selected{% endif %}>Inactive</option>
-    </select>
-    <button type="submit">Filter</button>
-  </form>
-  <table>
-    <thead>
-      <tr>
-        <th>Username</th>
-        <th>Role</th>
-        <th>Status</th>
-        <th>PTO</th>
-        <th>Emergency</th>
-        <th>Vacation</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for data in user_data %}
-        <tr>
-          <td>{{ data.user.username }}</td>
-          <td>{{ data.user.role }}</td>
-          <td>{{ data.user.status }}</td>
-          <td>{{ data.pto_total }}</td>
-          <td>{{ data.emergency_total }}</td>
-          <td>{{ data.vacation_total }}</td>
-          <td>
-            <a href="{{ url_for('edit_user', user_id=data.user.id) }}">Edit</a>
-            {% if data.has_current_period %}
-              <a href="{{ url_for('view_user', user_id=data.user.id) }}">View</a>
-            {% else %}
-              <a href="{{ url_for('set_period', user_id=data.user.id) }}">Set Period</a>
-            {% endif %}
-          </td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <a href="{{ url_for('add_user') }}">Add User</a>
-{% endblock %}
+<!-- dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Dashboard</h1>
+    <p>Welcome, {{ current_user.username }}</p>
+    <form method="get" action="{{ url_for('dashboard') }}">
+        <label for="role">Filter by role: </label>
+        <select name="role" id="role">
+            <option value="all" {% if filter_role == 'all' %}selected{% endif %}>All</option>
+            <option value="admin" {% if filter_role == 'admin' %}selected{% endif %}>Admin</option>
+            <option value="active" {% if filter_role == 'active' %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if filter_role == 'inactive' %}selected{% endif %}>Inactive</option>
+        </select>
+        <button type="submit">Filter</button>
+    </form>
+    <table>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>PTO</th>
+                <th>Emergency</th>
+                <th>Vacation</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in user_data %}
+            <tr>
+                <td>{{ data.user.username }}</td>
+                <td>{{ data.user.role }}</td>
+                <td>{{ data.user.status }}</td>
+                <td>{{ data.pto_total }}</td>
+                <td>{{ data.emergency_total }}</td>
+                <td>{{ data.vacation_total }}</td>
+                <td>
+                    <a href="{{ url_for('edit_user', user_id=data.user.id) }}">Edit</a>
+                    <a href="{{ url_for('view_user', user_id=data.user.id) }}">View</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('add_user') }}">Add User</a>
+</body>
+</html>
