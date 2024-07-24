@@ -32,22 +32,19 @@ class TimeOffForm(FlaskForm):
     end_date = DateField('End Date', format='%Y-%m-%d', validators=[DataRequired()])
     total_hours = FloatField('Total Hours', validators=[DataRequired()])
     reason = SelectField('Reason', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
-    period_start = HiddenField('Period Start')
-    period_end = HiddenField('Period End')
+    period_id = HiddenField('Period ID', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
 class AddTimeForm(FlaskForm):
     category = SelectField('Category', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
     hours = FloatField('Hours', validators=[DataRequired()])
-    period_start = HiddenField('Period Start')
-    period_end = HiddenField('Period End')
+    period_id = HiddenField('Period ID', validators=[DataRequired()])
     submit = SubmitField('Add Time')
 
 class EditBucketForm(FlaskForm):
     category = SelectField('Category', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
     new_value = FloatField('New Value', validators=[DataRequired()])
-    period_start = HiddenField('Period Start')
-    period_end = HiddenField('Period End')
+    period_id = HiddenField('Period ID', validators=[DataRequired()])
     submit = SubmitField('Update Bucket')
 
 class NoteForm(FlaskForm):
