@@ -1,33 +1,16 @@
-from datetime import datetime, timedelta
-from flask import Flask, render_template, url_for, flash, redirect, request, session, make_response
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user, login_required
-from flask_migrate import Migrate
+from flask_login import LoginManager
 from config import Config
-from models import db, login_manager, User, TimeOff, BucketChange, Note, Period
-from forms import LoginForm, AddUserForm, EditUserForm, TimeOffForm, AddTimeForm, EditBucketForm, NoteForm, AddPeriodForm
-from flask_wtf.csrf import CSRFProtect
-from sqlalchemy import func
-from wtforms import HiddenField
-from flask_wtf import FlaskForm
-from weasyprint import HTML
-import random
-import string
-import logging
-import io
-
-class HiddenForm(FlaskForm):
-    csrf_token = HiddenField()
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
-db.init_app(app)
-login_manager.init_app(app)
-csrf = CSRFProtect(app)
-migrate = Migrate(app, db)
+db = SQLAlchemy(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
 
-logging.basicConfig(level=logging.INFO)
+from models import User, TimeOff, BucketChange, Note, Period
 
 @login_manager.user_loader
 def load_user(user_id):
