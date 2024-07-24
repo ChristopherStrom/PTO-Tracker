@@ -390,53 +390,92 @@ def view_user_period():
     user = User.query.get_or_404(user_id)
     all_users = User.query.order_by(func.lower(User.username)).all() if current_user.role == 'admin' else [current_user]
 
-    # Calculate periods based on hire date
-    hire_date = user.start_date
-    current_date = datetime.utcnow()
-    period_year = request.args.get('period_year', current_date.year, type=int)
-
-    if current_date.month >= hire_date.month:
-        period_start = datetime(period_year, hire_date.month, 1)
-        period_end = datetime(period_year + 1, hire_date.month, 1) - timedelta(days=1)
-    else:
-        period_start = datetime(period_year - 1, hire_date.month, 1)
-        period_end = datetime(period_year, hire_date.month, 1) - timedelta(days=1)
-
-    # Fetch time offs and bucket changes for the selected period
+    # Fetch current period
+    current_period = Period.query.filter_by(user_id=user.id, is_current=True).first()
+    
+    # Fetch time offs and bucket changes for the current period
     time_offs = TimeOff.query.filter(
         TimeOff.user_id == user.id,
-        TimeOff.date >= period_start,
-        TimeOff.date <= period_end
+        TimeOff.period_id == current_period.id
     ).all()
 
     bucket_changes = BucketChange.query.filter(
         BucketChange.user_id == user.id,
-        BucketChange.date >= period_start,
-        BucketChange.date <= period_end
+        BucketChange.period_id == current_period.id
     ).all()
 
-    # Determine all periods present in the user's time off history
-    periods = db.session.query(func.extract('year', TimeOff.date)).filter_by(user_id=user_id).group_by(func.extract('year', TimeOff.date)).all()
-    periods = [int(p[0]) for p in periods]
+    # Determine all periods for the user
+    periods = Period.query.filter_by(user_id=user.id).all()
 
-    edit_bucket_form = EditBucketForm()  # Use the correct form
+    edit_bucket_form = EditBucketForm()
     note_form = NoteForm()
 
-    edit_bucket_form.period_start.data = period_start.strftime('%Y-%m-%d')
-    edit_bucket_form.period_end.data = period_end.strftime('%Y-%m-%d')
+    # Set current period dates for the forms
+    edit_bucket_form.period_start.data = current_period.start_date.strftime('%Y-%m-%d')
+    edit_bucket_form.period_end.data = current_period.end_date.strftime('%Y-%m-%d')
 
     return render_template('view_user_period.html', 
                            user=user, 
                            all_users=all_users,
-                           form=edit_bucket_form,  # Pass the correct form
+                           form=edit_bucket_form, 
                            note_form=note_form,
-                           current_period_start=period_start, 
-                           current_period_end=period_end,
+                           current_period_start=current_period.start_date, 
+                           current_period_end=current_period.end_date,
                            time_offs=time_offs, 
                            bucket_changes=bucket_changes,
                            notes=Note.query.filter_by(user_id=user_id).order_by(Note.date.desc()).all(),
-                           periods=periods,
-                           current_period=f'{period_start.year}-{period_end.year}')
+                           periods=periods)
+
+@app.route('/add_period', methods=['GET', 'POST'])
+@login_required
+def add_period():
+    if current_user.role != 'admin':
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    form = AddPeriodForm()
+    if form.validate_on_submit():
+        start_date = form.start_date.data
+        end_date = form.end_date.data
+        user_id = request.args.get('user_id', current_user.id, type=int)
+
+        period = Period(start_date=start_date, end_date=end_date, user_id=user_id)
+        db.session.add(period)
+        db.session.commit()
+        flash('Period added successfully.', 'success')
+        return redirect(url_for('view_user_period', user_id=user_id))
+    return render_template('add_period.html', form=form)
+
+@app.route('/delete_period/<int:period_id>', methods=['POST'])
+@login_required
+def delete_period(period_id):
+    period = Period.query.get_or_404(period_id)
+    user_id = period.user_id
+    if current_user.role != 'admin' and current_user.id != user_id:
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('dashboard'))
+
+    db.session.delete(period)
+    db.session.commit()
+    flash('Period deleted successfully', 'success')
+    return redirect(url_for('view_user_period', user_id=user_id))
+
+@app.route('/set_current_period/<int:period_id>', methods=['POST'])
+@login_required
+def set_current_period(period_id):
+    period = Period.query.get_or_404(period_id)
+    user_id = period.user_id
+    if current_user.role != 'admin' and current_user.id != user_id:
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('dashboard'))
+
+    # Unset current period for all periods of the user
+    Period.query.filter_by(user_id=user_id).update({'is_current': False})
+    period.is_current = True
+
+    db.session.commit()
+    flash('Current period set successfully', 'success')
+    return redirect(url_for('view_user_period', user_id=user_id))
 
 @app.route('/reset_period/<int:user_id>', methods=['POST'])
 @login_required
