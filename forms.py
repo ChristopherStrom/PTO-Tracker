@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, DateField, FloatField, SelectField, TextAreaField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, DateField, FloatField, SelectField, TextAreaField, HiddenField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from models import User
 from datetime import datetime, timedelta
@@ -42,6 +42,8 @@ class AddTimeForm(FlaskForm):
 class EditBucketForm(FlaskForm):
     category = SelectField('Category', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
     new_value = FloatField('New Value', validators=[DataRequired()])
+    period_start = HiddenField()
+    period_end = HiddenField()
     submit = SubmitField('Update Bucket')
 
 class NoteForm(FlaskForm):
