@@ -2,6 +2,7 @@
 
 import sys
 import os
+from datetime import date
 from werkzeug.security import generate_password_hash
 
 # Ensure the app's path is in the system path
@@ -21,8 +22,8 @@ def create_admin(username, password):
             admin = User(
                 username=username,
                 password_hash=generate_password_hash(password),
-                birth_date="1970-01-01",
-                start_date="2022-01-01",
+                birth_date=date(1970, 1, 1),
+                start_date=date(2022, 1, 1),
                 status='active',
                 role='admin'
             )
