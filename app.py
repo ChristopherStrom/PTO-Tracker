@@ -403,29 +403,23 @@ def delete_period(period_id):
     flash('Period deleted successfully', 'success')
     return redirect(url_for('view_user_period', user_id=user_id))
 
-@app.route('/set_period/<int:user_id>', methods=['GET', 'POST'])
+@app.route('/set_period/<int:user_id>', methods=['POST'])
 @login_required
 def set_period(user_id):
-    if current_user.role != 'admin':
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('dashboard'))
-    
     user = User.query.get_or_404(user_id)
-    form = AddPeriodForm(user_id=user.id)
-    
-    if form.validate_on_submit():
-        period = Period(
-            start_date=form.start_date.data,
-            end_date=form.end_date.data,
-            user_id=user.id,
-            is_current=form.is_current.data
-        )
-        db.session.add(period)
+    current_period = Period.query.filter_by(user_id=user.id, is_current=True).first()
+
+    if not current_period:
+        period_start = date(user.start_date.year, user.start_date.month, 1)
+        period_end = (period_start.replace(month=period_start.month % 12 + 1) - timedelta(days=1)).replace(day=1) - timedelta(days=1)
+        new_period = Period(start_date=period_start, end_date=period_end, user_id=user.id, is_current=True)
+        db.session.add(new_period)
         db.session.commit()
-        flash('Period added successfully', 'success')
-        return redirect(url_for('dashboard'))
+        flash('Current period set successfully.', 'success')
+    else:
+        flash('Current period already set.', 'info')
     
-    return render_template('add_period.html', form=form)
+    return redirect(url_for('view_user', user_id=user.id))
 
 @app.route('/set_session')
 def set_session():
