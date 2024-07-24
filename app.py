@@ -5,7 +5,7 @@ from flask_migrate import Migrate
 from config import Config
 from models import db, login_manager, User, TimeOff, BucketChange, Note
 from forms import LoginForm, AddUserForm, EditUserForm, TimeOffForm, AddTimeForm, EditBucketForm, NoteForm
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import func
 from wtforms import HiddenField
