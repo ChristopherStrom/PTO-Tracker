@@ -135,15 +135,6 @@ def edit_user(user_id):
         return redirect(url_for('dashboard'))
     return render_template('edit_user.html', form=form, user=user)
 
-from datetime import datetime, timedelta
-from flask import render_template, request, redirect, url_for, flash, session, make_response
-from flask_login import login_required, current_user
-from sqlalchemy import func
-from weasyprint import HTML
-from models import User, BucketChange, TimeOff, Note
-from forms import EditBucketForm, NoteForm
-import logging
-
 @app.route('/view_user', methods=['GET', 'POST'])
 @login_required
 def view_user():
@@ -178,25 +169,13 @@ def view_user():
     initial_emergency_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='emergency').scalar() or 0, 2)
     initial_vacation_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='vacation').scalar() or 0, 2)
 
-    logging.info(f"Initial PTO Total: {initial_pto_total}")
-    logging.info(f"Initial Emergency Total: {initial_emergency_total}")
-    logging.info(f"Initial Vacation Total: {initial_vacation_total}")
-
     used_pto_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='pto').scalar() or 0, 2)
     used_emergency_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='emergency').scalar() or 0, 2)
     used_vacation_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='vacation').scalar() or 0, 2)
 
-    logging.info(f"Used PTO Hours: {used_pto_hours}")
-    logging.info(f"Used Emergency Hours: {used_emergency_hours}")
-    logging.info(f"Used Vacation Hours: {used_vacation_hours}")
-
     pto_total = initial_pto_total - used_pto_hours
     emergency_total = initial_emergency_total - used_emergency_hours
     vacation_total = initial_vacation_total - used_vacation_hours
-
-    logging.info(f"Total PTO: {pto_total}")
-    logging.info(f"Total Emergency: {emergency_total}")
-    logging.info(f"Total Vacation: {vacation_total}")
 
     bucket_changes = BucketChange.query.filter_by(user_id=user_id).order_by(BucketChange.date.desc()).all()
     time_offs = TimeOff.query.filter_by(user_id=user_id).filter(db.extract('year', TimeOff.date) == year).order_by(TimeOff.date.desc()).all()
