@@ -1,54 +1,51 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard{% endblock %}
-
 {% block content %}
-<h1>Welcome, {{ current_user.username }}</h1>
-{% if current_user.role == 'admin' %}
-<form method="get" action="{{ url_for('dashboard') }}">
+  <h2>Dashboard</h2>
+  <a href="{{ url_for('logout') }}">Logout</a>
+  <p>Welcome, {{ current_user.username }}</p>
+  <form method="GET" action="{{ url_for('dashboard') }}">
     <label for="role">Filter by role:</label>
     <select id="role" name="role">
-        <option value="all" {% if filter_role == 'all' %}selected{% endif %}>All</option>
-        <option value="admin" {% if filter_role == 'admin' %}selected{% endif %}>Admins</option>
-        <option value="active" {% if filter_role == 'active' %}selected{% endif %}>Active Users</option>
-        <option value="inactive" {% if filter_role == 'inactive' %}selected{% endif %}>Inactive Users</option>
+      <option value="all" {% if filter_role == 'all' %}selected{% endif %}>All</option>
+      <option value="admin" {% if filter_role == 'admin' %}selected{% endif %}>Admin</option>
+      <option value="active" {% if filter_role == 'active' %}selected{% endif %}>Active</option>
+      <option value="inactive" {% if filter_role == 'inactive' %}selected{% endif %}>Inactive</option>
     </select>
     <button type="submit">Filter</button>
-</form>
-<table>
+  </form>
+  <table>
     <thead>
-        <tr>
-            <th>Username</th>
-            <th>Role</th>
-            <th>Status</th>
-            <th>PTO</th>
-            <th>Emergency</th>
-            <th>Vacation</th>
-            <th>Actions</th>
-        </tr>
+      <tr>
+        <th>Username</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th>PTO</th>
+        <th>Emergency</th>
+        <th>Vacation</th>
+        <th>Actions</th>
+      </tr>
     </thead>
     <tbody>
-        {% for user in user_data %}
+      {% for data in user_data %}
         <tr>
-            <td>{{ user.user.username }}</td>
-            <td>{{ user.user.role }}</td>
-            <td>{{ user.user.status }}</td>
-            <td>{{ user.pto_total }}</td>
-            <td>{{ user.emergency_total }}</td>
-            <td>{{ user.vacation_total }}</td>
-            <td>
-                <a href="{{ url_for('edit_user', user_id=user.user.id) }}">Edit</a>
-                <a href="{{ url_for('view_user', user_id=user.user.id) }}">View</a>
-            </td>
+          <td>{{ data.user.username }}</td>
+          <td>{{ data.user.role }}</td>
+          <td>{{ data.user.status }}</td>
+          <td>{{ data.pto_total }}</td>
+          <td>{{ data.emergency_total }}</td>
+          <td>{{ data.vacation_total }}</td>
+          <td>
+            <a href="{{ url_for('edit_user', user_id=data.user.id) }}">Edit</a>
+            {% if data.has_current_period %}
+              <a href="{{ url_for('view_user', user_id=data.user.id) }}">View</a>
+            {% else %}
+              <a href="{{ url_for('set_period', user_id=data.user.id) }}">Set Period</a>
+            {% endif %}
+          </td>
         </tr>
-        {% endfor %}
+      {% endfor %}
     </tbody>
-</table>
-<a href="{{ url_for('add_user') }}">Add User</a>
-{% else %}
-<h2>Your PTO Summary</h2>
-<p>PTO: {{ user_data[0].pto_total }}</p>
-<p>Emergency: {{ user_data[0].emergency_total }}</p>
-<p>Vacation: {{ user_data[0].vacation_total }}</p>
-{% endif %}
+  </table>
+  <a href="{{ url_for('add_user') }}">Add User</a>
 {% endblock %}
