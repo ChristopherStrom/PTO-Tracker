@@ -169,9 +169,9 @@ def view_user():
     initial_emergency_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='emergency').scalar() or 0, 2)
     initial_vacation_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='vacation').scalar() or 0, 2)
 
-    used_pto_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='pto').scalar() or 0, 2)
-    used_emergency_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='emergency').scalar() or 0, 2)
-    used_vacation_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='vacation').scalar() or 0, 2)
+    used_pto_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='pto').filter(TimeOff.date.isnot(None)).scalar() or 0, 2)
+    used_emergency_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='emergency').filter(TimeOff.date.isnot(None)).scalar() or 0, 2)
+    used_vacation_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='vacation').filter(TimeOff.date.isnot(None)).scalar() or 0, 2)
 
     pto_total = initial_pto_total - used_pto_hours
     emergency_total = initial_emergency_total - used_emergency_hours
@@ -225,6 +225,7 @@ def view_user():
         all_users=all_users, 
         notes=notes
     )
+
   
 @app.route('/add_note/<int:user_id>', methods=['POST'])
 @login_required
