@@ -65,24 +65,35 @@ def dashboard():
 
         user_data = []
         for user in users:
-            initial_pto_total = db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user.id, category='pto').scalar() or 0
-            initial_emergency_total = db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user.id, category='emergency').scalar() or 0
-            initial_vacation_total = db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user.id, category='vacation').scalar() or 0
+            current_period = Period.query.filter_by(user_id=user.id, is_current=True).first()
+            if not current_period:
+                user_data.append({
+                    'user': user,
+                    'pto_total': 0,
+                    'emergency_total': 0,
+                    'vacation_total': 0,
+                    'has_current_period': False
+                })
+            else:
+                initial_pto_total = db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user.id, category='pto', period_id=current_period.id).scalar() or 0
+                initial_emergency_total = db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user.id, category='emergency', period_id=current_period.id).scalar() or 0
+                initial_vacation_total = db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user.id, category='vacation', period_id=current_period.id).scalar() or 0
 
-            used_pto_hours = db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user.id, reason='pto').scalar() or 0
-            used_emergency_hours = db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user.id, reason='emergency').scalar() or 0
-            used_vacation_hours = db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user.id, reason='vacation').scalar() or 0
+                used_pto_hours = db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user.id, reason='pto', period_id=current_period.id).scalar() or 0
+                used_emergency_hours = db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user.id, reason='emergency', period_id=current_period.id).scalar() or 0
+                used_vacation_hours = db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user.id, reason='vacation', period_id=current_period.id).scalar() or 0
 
-            pto_total = round(initial_pto_total - used_pto_hours, 2)
-            emergency_total = round(initial_emergency_total - used_emergency_hours, 2)
-            vacation_total = round(initial_vacation_total - used_vacation_hours, 2)
+                pto_total = round(initial_pto_total - used_pto_hours, 2)
+                emergency_total = round(initial_emergency_total - used_emergency_hours, 2)
+                vacation_total = round(initial_vacation_total - used_vacation_hours, 2)
 
-            user_data.append({
-                'user': user,
-                'pto_total': pto_total,
-                'emergency_total': emergency_total,
-                'vacation_total': vacation_total
-            })
+                user_data.append({
+                    'user': user,
+                    'pto_total': pto_total,
+                    'emergency_total': emergency_total,
+                    'vacation_total': vacation_total,
+                    'has_current_period': True
+                })
 
         form = HiddenForm()
 
@@ -91,6 +102,7 @@ def dashboard():
         logging.error(f"Error in dashboard route: {e}")
         flash('An error occurred while loading the dashboard.', 'danger')
         return redirect(url_for('login'))
+
 
 @app.route('/add_user', methods=['GET', 'POST'])
 @login_required
