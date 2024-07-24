@@ -260,7 +260,6 @@ def delete_note(note_id):
     flash('Note deleted successfully', 'success')
     return redirect(url_for('view_user', user_id=user_id))
 
-
 @app.route('/add_time_off/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def add_time_off(user_id):
@@ -278,7 +277,7 @@ def add_time_off(user_id):
             # Create a TimeOff entry for each day
             for i in range(delta):
                 date = form.start_date.data + timedelta(days=i)
-                time_off = TimeOff(date=date, hours=hours_per_day, reason=form.reason.data, user_id=user.id)
+                time_off = TimeOff(date=date, hours=hours_per_day, reason=form.reason.data, user_id=user.id, period_id=current_period.id)
                 db.session.add(time_off)
             db.session.commit()
             flash(f'Successfully added {form.total_hours.data} hours of {form.reason.data} for {user.username}', 'success')
@@ -287,7 +286,6 @@ def add_time_off(user_id):
             db.session.rollback()
             flash(f'An error occurred: {e}', 'danger')
     return render_template('add_time_off.html', form=form, user=user)
-
 
 @app.route('/add_time/<int:user_id>', methods=['GET', 'POST'])
 @login_required
@@ -313,13 +311,12 @@ def add_time(user_id):
             user.vacation_hours += form.hours.data
             new_value = user.vacation_hours
         
-        bucket_change = BucketChange(category=form.category.data, old_value=old_value, new_value=new_value, user_id=user.id)
+        bucket_change = BucketChange(category=form.category.data, old_value=old_value, new_value=new_value, user_id=user.id, period_id=current_period.id)
         db.session.add(bucket_change)
         db.session.commit()
         flash(f'Successfully added {form.hours.data} hours to {form.category.data} for {user.username}', 'success')
         return redirect(url_for('view_user', user_id=user.id))
     return render_template('add_time.html', form=form, user=user)
-
 
 @app.route('/delete_time_off/<int:time_off_id>', methods=['POST'])
 @login_required
@@ -428,7 +425,7 @@ def add_period():
         return redirect(url_for('dashboard'))
     
     return render_template('add_period.html', form=form)
-    
+
 @app.route('/set_current_period/<int:period_id>', methods=['POST'])
 @login_required
 def set_current_period(period_id):
@@ -461,37 +458,6 @@ def delete_period(period_id):
     db.session.commit()
     flash('Period deleted successfully', 'success')
     return redirect(url_for('view_user_period', user_id=user_id))
-
-@app.route('/set_current_period/<int:period_id>', methods=['POST'])
-@login_required
-def set_current_period(period_id):
-    period = Period.query.get_or_404(period_id)
-    user_id = period.user_id
-    if current_user.role != 'admin' and current_user.id != user_id:
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('dashboard'))
-
-    # Unset current period for all periods of the user
-    Period.query.filter_by(user_id=user_id).update({'is_current': False})
-    period.is_current = True
-
-    db.session.commit()
-    flash('Current period set successfully', 'success')
-    return redirect(url_for('view_user_period', user_id=user_id))
-
-@app.route('/delete_period/<int:period_id>', methods=['POST'])
-@login_required
-def delete_period(period_id):
-    if current_user.role != 'admin':
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('dashboard'))
-
-    period = Period.query.get_or_404(period_id)
-    db.session.delete(period)
-    db.session.commit()
-
-    flash('Period deleted successfully', 'success')
-    return redirect(url_for('view_user_period', user_id=period.user_id))
 
 @app.route('/set_session')
 def set_session():
