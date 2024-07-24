@@ -17,6 +17,7 @@ class User(UserMixin, db.Model):
     pto_hours = db.Column(db.Float, default=0.0)
     emergency_hours = db.Column(db.Float, default=0.0)
     vacation_hours = db.Column(db.Float, default=0.0)
+    current_period_id = db.Column(db.Integer, db.ForeignKey('period.id'))
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -24,13 +25,23 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+class Period(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    start_date = db.Column(db.Date, nullable=False)
+    end_date = db.Column(db.Date, nullable=False)
+    is_current = db.Column(db.Boolean, default=False)
+    user = db.relationship('User', backref=db.backref('periods', lazy=True))
+
 class TimeOff(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, nullable=False)
     hours = db.Column(db.Float, nullable=False)
     reason = db.Column(db.String(50), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    period_id = db.Column(db.Integer, db.ForeignKey('period.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('time_offs', lazy=True))
+    period = db.relationship('Period', backref=db.backref('time_offs', lazy=True))
 
 class BucketChange(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -39,7 +50,9 @@ class BucketChange(db.Model):
     old_value = db.Column(db.Float, nullable=False)
     new_value = db.Column(db.Float, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    period_id = db.Column(db.Integer, db.ForeignKey('period.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('bucket_changes', lazy=True))
+    period = db.relationship('Period', backref=db.backref('bucket_changes', lazy=True))
 
 class Note(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -47,16 +60,6 @@ class Note(db.Model):
     content = db.Column(db.Text, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     user = db.relationship('User', backref=db.backref('notes', lazy=True))
-
-class PeriodArchive(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    pto_total = db.Column(db.Float, nullable=False, default=0)
-    emergency_total = db.Column(db.Float, nullable=False, default=0)
-    vacation_total = db.Column(db.Float, nullable=False, default=0)
-    period_start = db.Column(db.DateTime, nullable=False)
-    period_end = db.Column(db.DateTime, nullable=False)
-    user = db.relationship('User', backref=db.backref('archives', lazy=True))
 
 @login_manager.user_loader
 def load_user(user_id):
