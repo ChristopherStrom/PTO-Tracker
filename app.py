@@ -384,6 +384,35 @@ def update_status(user_id):
     
     return redirect(url_for('dashboard'))
 
+@app.route('/view_user_period', methods=['GET'])
+@login_required
+def view_user_period():
+    user_id = request.args.get('user_id')
+    user = User.query.get_or_404(user_id)
+
+    # Calculate periods based on hire date
+    hire_date = user.start_date
+    current_date = datetime.utcnow()
+    period_start = datetime(current_date.year, hire_date.month, 1)
+    period_end = (period_start.replace(year=period_start.year + 1) - timedelta(days=1)).replace(day=1) - timedelta(days=1)
+
+    # Fetch time offs for the current period
+    time_offs = TimeOff.query.filter(
+        TimeOff.user_id == user.id,
+        TimeOff.date >= period_start,
+        TimeOff.date <= period_end
+    ).all()
+
+    # Fetch bucket changes for the current period
+    bucket_changes = BucketChange.query.filter(
+        BucketChange.user_id == user.id,
+        BucketChange.date >= period_start,
+        BucketChange.date <= period_end
+    ).all()
+
+    return render_template('view_user_period.html', user=user, time_offs=time_offs, bucket_changes=bucket_changes,
+                           current_period_start=period_start, current_period_end=period_end)
+
 @app.route('/reset_period/<int:user_id>', methods=['POST'])
 @login_required
 def reset_period(user_id):
