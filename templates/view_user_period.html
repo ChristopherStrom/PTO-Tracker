@@ -80,18 +80,8 @@
         {% endif %}
     </div>
 </div>
+
 <h3 class="mt-4">Time Off History</h3>
-<form method="GET" action="{{ url_for('view_user_period', user_id=user.id) }}">
-    <div class="form-group">
-        <label for="period">Filter by Period</label>
-        <select id="period" name="period_year" class="form-control" onchange="this.form.submit()">
-            {% for year in periods %}
-                <option value="{{ year }}" {% if year == current_period_start.year %}selected{% endif %}>{{ year }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <input type="hidden" name="user_id" value="{{ user.id }}">
-</form>
 <table class="table table-bordered">
     <thead>
         <tr>
