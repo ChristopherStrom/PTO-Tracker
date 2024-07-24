@@ -419,13 +419,13 @@ def view_user_period():
     periods = db.session.query(func.extract('year', TimeOff.date)).filter_by(user_id=user_id).group_by(func.extract('year', TimeOff.date)).all()
     periods = [int(p[0]) for p in periods]
 
-    form = HiddenForm()
+    edit_bucket_form = EditBucketForm()  # Use the correct form
     note_form = NoteForm()
 
     return render_template('view_user_period.html', 
                            user=user, 
                            all_users=all_users,
-                           form=form,
+                           form=edit_bucket_form,  # Pass the correct form
                            note_form=note_form,
                            current_period_start=period_start, 
                            current_period_end=period_end,
