@@ -143,107 +143,44 @@ def edit_user(user_id):
         return redirect(url_for('dashboard'))
     return render_template('edit_user.html', form=form, user=user)
 
-@app.route('/view_user', methods=['GET', 'POST'])
+@app.route('/view_user/<int:user_id>', methods=['GET'])
 @login_required
-def view_user():
-    user_id = request.args.get('user_id', current_user.id, type=int)
+def view_user(user_id):
     user = User.query.get_or_404(user_id)
-    all_users = User.query.order_by(func.lower(User.username)).all() if current_user.role == 'admin' else [current_user]
-
-    form = EditBucketForm()
-    note_form = NoteForm()
-    year = request.args.get('year', None, type=int)
-
-    current_period = Period.query.filter_by(user_id=user_id, is_current=True).first()
-
+    current_period = Period.query.filter_by(user_id=user.id, is_current=True).first()
+    
     if not current_period:
         flash('No current period set for this user. Please set a current period first.', 'danger')
-        return redirect(url_for('set_period', user_id=user.id))
+        return redirect(url_for('dashboard'))
 
-    if form.validate_on_submit():
-        old_value = 0
-        if form.category.data == 'pto':
-            old_value = user.pto_hours
-            user.pto_hours = form.new_value.data
-        elif form.category.data == 'emergency':
-            old_value = user.emergency_hours
-            user.emergency_hours = form.new_value.data
-        elif form.category.data == 'vacation':
-            old_value = user.vacation_hours
-            user.vacation_hours = form.new_value.data
+    initial_pto_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user.id, category='pto', period_id=current_period.id).scalar() or 0, 2)
+    initial_emergency_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user.id, category='emergency', period_id=current_period.id).scalar() or 0, 2)
+    initial_vacation_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user.id, category='vacation', period_id=current_period.id).scalar() or 0, 2)
 
-        bucket_change = BucketChange(category=form.category.data, old_value=old_value, new_value=form.new_value.data, user_id=user.id, period_id=current_period.id)
-        db.session.add(bucket_change)
-        db.session.commit()
-        flash(f'{form.category.data.capitalize()} hours updated to {form.new_value.data}', 'success')
-        return redirect(url_for('view_user', user_id=user.id, year=year))
-    
-    initial_pto_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='pto', period_id=current_period.id).scalar() or 0, 2)
-    initial_emergency_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='emergency', period_id=current_period.id).scalar() or 0, 2)
-    initial_vacation_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='vacation', period_id=current_period.id).scalar() or 0, 2)
-
-    used_pto_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='pto', period_id=current_period.id).scalar() or 0, 2)
-    used_emergency_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='emergency', period_id=current_period.id).scalar() or 0, 2)
-    used_vacation_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='vacation', period_id=current_period.id).scalar() or 0, 2)
+    used_pto_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user.id, reason='pto', period_id=current_period.id).scalar() or 0, 2)
+    used_emergency_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user.id, reason='emergency', period_id=current_period.id).scalar() or 0, 2)
+    used_vacation_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user.id, reason='vacation', period_id=current_period.id).scalar() or 0, 2)
 
     pto_total = initial_pto_total - used_pto_hours
     emergency_total = initial_emergency_total - used_emergency_hours
     vacation_total = initial_vacation_total - used_vacation_hours
 
-    years = db.session.query(func.extract('year', TimeOff.date)).filter_by(user_id=user_id).group_by(func.extract('year', TimeOff.date)).all()
-    years = [int(y[0]) for y in years]
-    
-    if year is None and years:
-        year = max(years)
-
-    time_offs = TimeOff.query.filter_by(user_id=user_id, period_id=current_period.id).order_by(TimeOff.date.desc()).all()
-    bucket_changes = BucketChange.query.filter_by(user_id=user_id, period_id=current_period.id).order_by(BucketChange.date.desc()).all()
-    notes = Note.query.filter_by(user_id=user_id).order_by(Note.date.desc()).all()
-
-    if 'export' in request.args and request.args.get('export') == 'pdf':
-        rendered = render_template(
-            'export_user.html', 
-            user=user, 
-            bucket_changes=bucket_changes, 
-            time_offs=time_offs, 
-            initial_pto_total=initial_pto_total, 
-            used_pto_hours=used_pto_hours, 
-            pto_total=pto_total, 
-            initial_emergency_total=initial_emergency_total, 
-            used_emergency_hours=used_emergency_hours, 
-            emergency_total=emergency_total, 
-            initial_vacation_total=initial_vacation_total, 
-            used_vacation_hours=used_vacation_hours, 
-            vacation_total=vacation_total
-        )
-        pdf = HTML(string=rendered).write_pdf()
-        response = make_response(pdf)
-        response.headers['Content-Type'] = 'application/pdf'
-        response.headers['Content-Disposition'] = 'inline; filename=user_details.pdf'
-        return response
+    time_offs = TimeOff.query.filter_by(user_id=user.id, period_id=current_period.id).order_by(TimeOff.date.desc()).all()
+    bucket_changes = BucketChange.query.filter_by(user_id=user.id, period_id=current_period.id).order_by(BucketChange.date.desc()).all()
+    notes = Note.query.filter_by(user_id=user.id).order_by(Note.date.desc()).all()
 
     return render_template(
         'view_user.html', 
         user=user, 
-        form=form, 
-        note_form=note_form, 
-        bucket_changes=bucket_changes, 
+        current_period=current_period, 
         time_offs=time_offs, 
-        year=year, 
-        years=years,
-        datetime=datetime, 
-        initial_pto_total=initial_pto_total, 
-        used_pto_hours=used_pto_hours, 
+        bucket_changes=bucket_changes, 
+        notes=notes, 
         pto_total=pto_total, 
-        initial_emergency_total=initial_emergency_total, 
-        used_emergency_hours=used_emergency_hours, 
         emergency_total=emergency_total, 
-        initial_vacation_total=initial_vacation_total, 
-        used_vacation_hours=used_vacation_hours, 
-        vacation_total=vacation_total, 
-        all_users=all_users, 
-        notes=notes
+        vacation_total=vacation_total
     )
+
 
 @app.route('/add_note/<int:user_id>', methods=['POST'])
 @login_required
