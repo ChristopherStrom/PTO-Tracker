@@ -57,6 +57,15 @@ class PeriodArchive(db.Model):
     period_start = db.Column(db.DateTime, nullable=False)
     period_end = db.Column(db.DateTime, nullable=False)
 
+class PeriodArchive(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    pto_total = db.Column(db.Float, nullable=False, default=0)
+    emergency_total = db.Column(db.Float, nullable=False, default=0)
+    vacation_total = db.Column(db.Float, nullable=False, default=0)
+    period_start = db.Column(db.DateTime, nullable=False)
+    period_end = db.Column(db.DateTime, nullable=False)
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
