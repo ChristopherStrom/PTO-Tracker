@@ -388,13 +388,13 @@ def update_status(user_id):
 def view_user_period():
     user_id = request.args.get('user_id', current_user.id, type=int)
     user = User.query.get_or_404(user_id)
+    all_users = User.query.order_by(func.lower(User.username)).all() if current_user.role == 'admin' else [current_user]
 
     # Calculate periods based on hire date
     hire_date = user.start_date
     current_date = datetime.utcnow()
     current_year = current_date.year
 
-    # Determine the period start and end dates
     if current_date.month >= hire_date.month:
         period_start = datetime(current_year, hire_date.month, 1)
     else:
@@ -415,9 +415,26 @@ def view_user_period():
         BucketChange.date <= period_end
     ).all()
 
-    return render_template('view_user_period.html', user=user, time_offs=time_offs, bucket_changes=bucket_changes,
-                           current_period_start=period_start, current_period_end=period_end)
+    # Determine all periods present in the user's time off history
+    periods = db.session.query(func.extract('year', TimeOff.date)).filter_by(user_id=user_id).group_by(func.extract('year', TimeOff.date)).all()
+    periods = [int(p[0]) for p in periods]
 
+    form = HiddenForm()
+    note_form = NoteForm()
+
+    return render_template('view_user_period.html', 
+                           user=user, 
+                           all_users=all_users,
+                           form=form,
+                           note_form=note_form,
+                           current_period_start=period_start, 
+                           current_period_end=period_end,
+                           time_offs=time_offs, 
+                           bucket_changes=bucket_changes,
+                           notes=Note.query.filter_by(user_id=user_id).order_by(Note.date.desc()).all(),
+                           periods=periods,
+                           current_period=f'{period_start.year}-{period_end.year}')
+    
 @app.route('/reset_period/<int:user_id>', methods=['POST'])
 @login_required
 def reset_period(user_id):
