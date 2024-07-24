@@ -4,8 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user, login_required
 from flask_migrate import Migrate
 from config import Config
-from models import db, login_manager, User, TimeOff, BucketChange, Note, PeriodArchive
-from forms import LoginForm, AddUserForm, EditUserForm, TimeOffForm, AddTimeForm, EditBucketForm, NoteForm
+from models import db, login_manager, User, TimeOff, BucketChange, Note, Period
+from forms import LoginForm, AddUserForm, EditUserForm, TimeOffForm, AddTimeForm, EditBucketForm, NoteForm, AddPeriodForm
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import func
 from wtforms import HiddenField
