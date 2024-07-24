@@ -135,6 +135,9 @@ def edit_user(user_id):
         return redirect(url_for('dashboard'))
     return render_template('edit_user.html', form=form, user=user)
 
+from datetime import datetime
+import re
+
 @app.route('/view_user', methods=['GET', 'POST'])
 @login_required
 def view_user():
@@ -145,7 +148,7 @@ def view_user():
     form = EditBucketForm()
     note_form = NoteForm()
     year = request.args.get('year', datetime.utcnow().year, type=int)
-    
+
     if form.validate_on_submit():
         old_value = 0
         if form.category.data == 'pto':
@@ -163,70 +166,43 @@ def view_user():
         db.session.commit()
         flash(f'{form.category.data.capitalize()} hours updated to {form.new_value.data}', 'success')
         return redirect(url_for('view_user', user_id=user.id, year=year))
-    
+
     # Calculate the totals from bucket changes and time off, rounding to 2 decimal places
     initial_pto_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='pto').scalar() or 0, 2)
     initial_emergency_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='emergency').scalar() or 0, 2)
     initial_vacation_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='vacation').scalar() or 0, 2)
 
-    used_pto_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='pto').filter(TimeOff.date.isnot(None)).scalar() or 0, 2)
-    used_emergency_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='emergency').filter(TimeOff.date.isnot(None)).scalar() or 0, 2)
-    used_vacation_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='vacation').filter(TimeOff.date.isnot(None)).scalar() or 0, 2)
+    used_pto_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='pto').scalar() or 0, 2)
+    used_emergency_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='emergency').scalar() or 0, 2)
+    used_vacation_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='vacation').scalar() or 0, 2)
 
     pto_total = initial_pto_total - used_pto_hours
     emergency_total = initial_emergency_total - used_emergency_hours
     vacation_total = initial_vacation_total - used_vacation_hours
 
-    bucket_changes = BucketChange.query.filter_by(user_id=user_id).order_by(BucketChange.date.desc()).all()
-    time_offs = TimeOff.query.filter_by(user_id=user_id).filter(db.extract('year', TimeOff.date) == year).order_by(TimeOff.date.desc()).all()
+    # Identify entries with bad dates
+    bad_date_entries = TimeOff.query.filter(TimeOff.user_id == user_id, ~TimeOff.date.like('____-__-__')).all()
+    
+    # Filter time offs by year and include bad date entries
+    time_offs = TimeOff.query.filter(
+        (TimeOff.user_id == user_id) &
+        (db.extract('year', TimeOff.date) == year) |
+        (TimeOff.id.in_([entry.id for entry in bad_date_entries]))
+    ).order_by(TimeOff.date.desc()).all()
+    
     notes = Note.query.filter_by(user_id=user_id).order_by(Note.date.desc()).all()
 
     # PDF export
     if 'export' in request.args and request.args.get('export') == 'pdf':
-        rendered = render_template(
-            'export_user.html', 
-            user=user, 
-            bucket_changes=bucket_changes, 
-            time_offs=time_offs, 
-            initial_pto_total=initial_pto_total, 
-            used_pto_hours=used_pto_hours, 
-            pto_total=pto_total, 
-            initial_emergency_total=initial_emergency_total, 
-            used_emergency_hours=used_emergency_hours, 
-            emergency_total=emergency_total, 
-            initial_vacation_total=initial_vacation_total, 
-            used_vacation_hours=used_vacation_hours, 
-            vacation_total=vacation_total
-        )
+        rendered = render_template('export_user.html', user=user, time_offs=time_offs, initial_pto_total=initial_pto_total, used_pto_hours=used_pto_hours, pto_total=pto_total, initial_emergency_total=initial_emergency_total, used_emergency_hours=used_emergency_hours, emergency_total=emergency_total, initial_vacation_total=initial_vacation_total, used_vacation_hours=used_vacation_hours, vacation_total=vacation_total)
         pdf = HTML(string=rendered).write_pdf()
         response = make_response(pdf)
         response.headers['Content-Type'] = 'application/pdf'
         response.headers['Content-Disposition'] = 'inline; filename=user_details.pdf'
         return response
 
-    return render_template(
-        'view_user.html', 
-        user=user, 
-        form=form, 
-        note_form=note_form, 
-        bucket_changes=bucket_changes, 
-        time_offs=time_offs, 
-        year=year, 
-        datetime=datetime, 
-        initial_pto_total=initial_pto_total, 
-        used_pto_hours=used_pto_hours, 
-        pto_total=pto_total, 
-        initial_emergency_total=initial_emergency_total, 
-        used_emergency_hours=used_emergency_hours, 
-        emergency_total=emergency_total, 
-        initial_vacation_total=initial_vacation_total, 
-        used_vacation_hours=used_vacation_hours, 
-        vacation_total=vacation_total, 
-        all_users=all_users, 
-        notes=notes
-    )
+    return render_template('view_user.html', user=user, form=form, note_form=note_form, time_offs=time_offs, year=year, datetime=datetime, initial_pto_total=initial_pto_total, used_pto_hours=used_pto_hours, pto_total=pto_total, initial_emergency_total=initial_emergency_total, used_emergency_hours=used_emergency_hours, emergency_total=emergency_total, initial_vacation_total=initial_vacation_total, used_vacation_hours=used_vacation_hours, vacation_total=vacation_total, all_users=all_users, notes=notes, bad_date_entries=bad_date_entries)  
 
-  
 @app.route('/add_note/<int:user_id>', methods=['POST'])
 @login_required
 def add_note(user_id):
