@@ -50,6 +50,5 @@ class NoteForm(FlaskForm):
 class AddPeriodForm(FlaskForm):
     start_date = DateField('Start Date', validators=[DataRequired()])
     end_date = DateField('End Date', validators=[DataRequired()])
-    user_id = HiddenField('User ID', validators=[DataRequired()])
     is_current = BooleanField('Is Current')
     submit = SubmitField('Add Period')
