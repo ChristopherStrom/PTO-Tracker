@@ -57,3 +57,8 @@ class AddPeriodForm(FlaskForm):
 
 class HiddenForm(FlaskForm):
     submit = SubmitField('Hidden')
+
+class BucketForm(FlaskForm):
+    category = SelectField('Category', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')])
+    new_value = IntegerField('New Value', validators=[DataRequired()])
+    submit = SubmitField('Update Bucket')
