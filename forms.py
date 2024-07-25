@@ -1,7 +1,8 @@
 # forms.py
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, DateField, FloatField, SelectField, TextAreaField, HiddenField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, IntegerField, SelectField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
+from models import User
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
@@ -11,55 +12,48 @@ class LoginForm(FlaskForm):
 
 class AddUserForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
-    birth_date = DateField('Birth Date', validators=[DataRequired()])
-    start_date = DateField('Start Date', validators=[DataRequired()])
-    status = SelectField('Status', choices=[('active', 'Active'), ('inactive', 'Inactive')], validators=[DataRequired()])
-    role = SelectField('Role', choices=[('user', 'User'), ('admin', 'Admin')], validators=[DataRequired()])
+    birth_date = StringField('Birth Date', validators=[DataRequired()])
+    start_date = StringField('Start Date', validators=[DataRequired()])
+    status = SelectField('Status', choices=[('active', 'Active'), ('inactive', 'Inactive')])
+    role = SelectField('Role', choices=[('admin', 'Admin'), ('user', 'User')])
     submit = SubmitField('Add User')
 
 class EditUserForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
-    birth_date = DateField('Birth Date', validators=[DataRequired()])
-    start_date = DateField('Start Date', validators=[DataRequired()])
-    status = SelectField('Status', choices=[('active', 'Active'), ('inactive', 'Inactive')], validators=[DataRequired()])
-    role = SelectField('Role', choices=[('user', 'User'), ('admin', 'Admin')], validators=[DataRequired()])
-    password = PasswordField('Password', validators=[Length(min=0, max=20)])  # Allow empty password for no change
-    period_start_date = DateField('Period Start Date', validators=[DataRequired()])
-    period_end_date = DateField('Period End Date', validators=[DataRequired()])
+    birth_date = StringField('Birth Date', validators=[DataRequired()])
+    start_date = StringField('Start Date', validators=[DataRequired()])
+    status = SelectField('Status', choices=[('active', 'Active'), ('inactive', 'Inactive')])
+    role = SelectField('Role', choices=[('admin', 'Admin'), ('user', 'User')])
+    password = PasswordField('Password', validators=[Length(min=6, max=20)])
     submit = SubmitField('Update User')
 
 class TimeOffForm(FlaskForm):
-    start_date = DateField('Start Date', format='%Y-%m-%d', validators=[DataRequired()])
-    end_date = DateField('End Date', format='%Y-%m-%d', validators=[DataRequired()])
-    total_hours = FloatField('Total Hours', validators=[DataRequired()])
-    reason = SelectField('Reason', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
-    submit = SubmitField('Submit')
+    start_date = StringField('Start Date', validators=[DataRequired()])
+    end_date = StringField('End Date', validators=[DataRequired()])
+    total_hours = IntegerField('Total Hours', validators=[DataRequired()])
+    reason = SelectField('Reason', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')])
+    submit = SubmitField('Add Time Off')
 
 class AddTimeForm(FlaskForm):
-    category = SelectField('Category', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
-    hours = FloatField('Hours', validators=[DataRequired()])
+    category = SelectField('Category', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')])
+    hours = IntegerField('Hours', validators=[DataRequired()])
     submit = SubmitField('Add Time')
-    
-class BucketForm(FlaskForm):
-    category = StringField('Category', validators=[DataRequired()])
-    new_value = IntegerField('New Value', validators=[DataRequired()])
-    submit = SubmitField('Submit')
-    
+
 class EditBucketForm(FlaskForm):
-    category = SelectField('Category', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
-    new_value = FloatField('New Value', validators=[DataRequired()])
+    category = SelectField('Category', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')])
+    new_value = IntegerField('New Value', validators=[DataRequired()])
     submit = SubmitField('Update Bucket')
 
 class NoteForm(FlaskForm):
-    content = TextAreaField('Note', validators=[DataRequired()])
+    content = StringField('Content', validators=[DataRequired(), Length(min=1, max=500)])
     submit = SubmitField('Add Note')
 
 class AddPeriodForm(FlaskForm):
-    start_date = DateField('Start Date', validators=[DataRequired()])
-    end_date = DateField('End Date', validators=[DataRequired()])
-    user_id = HiddenField('User ID', validators=[DataRequired()])
+    start_date = StringField('Start Date', validators=[DataRequired()])
+    end_date = StringField('End Date', validators=[DataRequired()])
+    user_id = IntegerField('User ID', validators=[DataRequired()])
     is_current = BooleanField('Is Current')
     submit = SubmitField('Add Period')
 
 class HiddenForm(FlaskForm):
-    hidden_field = HiddenField('Hidden Field')
+    submit = SubmitField('Hidden')
