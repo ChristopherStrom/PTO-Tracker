@@ -24,6 +24,8 @@ class EditUserForm(FlaskForm):
     status = SelectField('Status', choices=[('active', 'Active'), ('inactive', 'Inactive')], validators=[DataRequired()])
     role = SelectField('Role', choices=[('user', 'User'), ('admin', 'Admin')], validators=[DataRequired()])
     password = PasswordField('Password', validators=[Length(min=0, max=20)])  # Allow empty password for no change
+    period_start_date = DateField('Period Start Date', validators=[DataRequired()])
+    period_end_date = DateField('Period End Date', validators=[DataRequired()])
     submit = SubmitField('Update User')
 
 class TimeOffForm(FlaskForm):
