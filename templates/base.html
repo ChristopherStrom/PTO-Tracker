@@ -1,44 +1,178 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PTO Tracker</title>
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">PTO Tracker</a>
-        <div class="collapse navbar-collapse">
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
-    <div class="container mt-5">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        {% block content %}{% endblock %}
+{% extends "base.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        {% if current_user.role == 'admin' %}
+            <form method="GET" action="{{ url_for('view_user') }}" class="form-inline mb-3">
+                <div class="form-group">
+                    <label for="user_select" class="mr-2">Select User:</label>
+                    <select id="user_select" name="user_id" class="form-control mr-2" onchange="this.form.submit()">
+                        {% for u in all_users %}
+                            <option value="{{ u.id }}" {% if u.id == user.id %}selected{% endif %}>{{ u.username }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <a href="{{ url_for('view_user', user_id=user.id, export='pdf') }}" class="btn btn-info ml-2">Export to PDF</a>
+            </form>
+        {% else %}
+            <h2>{{ user.username }}</h2>
+        {% endif %}
+        <ul class="list-group mb-3">
+            <li class="list-group-item"><strong>Start Date:</strong> {{ user.start_date }}</li>
+            <li class="list-group-item"><strong>Birth Date:</strong> {{ user.birth_date }}</li>
+            <li class="list-group-item"><strong>Start Period:</strong> {{ user.start_period }}</li>
+            <li class="list-group-item"><strong>End Period:</strong> {{ user.end_period or 'N/A' }}</li>
+            <li class="list-group-item"><strong>PTO Hours:</strong> 
+                <ul>
+                    <li>Initial: {{ initial_pto_total }}</li>
+                    <li>Used: {{ used_pto_hours }}</li>
+                    <li>Remaining: {{ pto_total }}</li>
+                </ul>
+            </li>
+            <li class="list-group-item"><strong>Emergency Hours:</strong> 
+                <ul>
+                    <li>Initial: {{ initial_emergency_total }}</li>
+                    <li>Used: {{ used_emergency_hours }}</li>
+                    <li>Remaining: {{ emergency_total }}</li>
+                </ul>
+            </li>
+            <li class="list-group-item"><strong>Vacation Hours:</strong> 
+                <ul>
+                    <li>Initial: {{ initial_vacation_total }}</li>
+                    <li>Used: {{ used_vacation_hours }}</li>
+                    <li>Remaining: {{ vacation_total }}</li>
+                </ul>
+            </li>
+        </ul>
+        <a href="{{ url_for('add_time_off', user_id=user.id) }}" class="btn btn-warning">Add Time Off</a>
+        {% if current_user.role == 'admin' %}
+            <a href="{{ url_for('add_time', user_id=user.id) }}" class="btn btn-success">Add Time to Buckets</a>
+        {% endif %}
     </div>
-    <!-- Bootstrap JS and dependencies -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
-</html>
+    <div class="col-md-4">
+        {% if current_user.role == 'admin' %}
+            <h3>Edit Buckets</h3>
+            <form method="POST">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    {{ form.category.label(class="form-label") }}
+                    {{ form.category(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.new_value.label(class="form-label") }}
+                    {{ form.new_value(class="form-control") }}
+                </div>
+                <div class="form-group">
+                    {{ form.submit(class="btn btn-primary btn-block") }}
+                </div>
+            </form>
+        {% endif %}
+    </div>
+</div>
+<h3 class="mt-4">Time Off History</h3>
+<form method="GET" action="{{ url_for('view_user', user_id=user.id) }}">
+    <div class="form-group">
+        <label for="year">Filter by Year</label>
+        <select id="year" name="year" class="form-control" onchange="this.form.submit()">
+            {% for y in years %}
+                <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <input type="hidden" name="user_id" value="{{ user.id }}">
+</form>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Hours</th>
+            <th>Reason</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for time_off in time_offs %}
+            <tr>
+                <td>{{ time_off.date }}</td>
+                <td>{{ time_off.hours }}</td>
+                <td>
+                    {% if time_off.reason == 'pto' %}
+                        PTO
+                    {% elif time_off.reason == 'emergency' %}
+                        Emergency
+                    {% elif time_off.reason == 'vacation' %}
+                        Vacation
+                    {% endif %}
+                </td>
+                <td>
+                    {% if current_user.role == 'admin' %}
+                        <form method="POST" action="{{ url_for('delete_time_off', time_off_id=time_off.id) }}" style="display:inline;">
+                            {{ form.hidden_tag() }}
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    {% else %}
+                        <button class="btn btn-danger btn-sm" disabled>Delete</button>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3 class="mt-4">Bucket Changes</h3>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Category</th>
+            <th>Old Value</th>
+            <th>New Value</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for change in bucket_changes %}
+            <tr>
+                <td>{{ change.date }}</td>
+                <td>{{ change.category }}</td>
+                <td>{{ change.old_value }}</td>
+                <td>{{ change.new_value }}</td>
+                <td>
+                    {% if current_user.role == 'admin' %}
+                        <form method="POST" action="{{ url_for('delete_bucket_change', bucket_change_id=change.id) }}" style="display:inline;">
+                            {{ form.hidden_tag() }}
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    {% else %}
+                        <button class="btn btn-danger btn-sm" disabled>Delete</button>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3 class="mt-4">Notes</h3>
+<form method="POST" action="{{ url_for('add_note', user_id=user.id) }}">
+    {{ note_form.hidden_tag() }}
+    <div class="form-group">
+        {{ note_form.content.label(class="form-label") }}
+        {{ note_form.content(class="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ note_form.submit(class="btn btn-primary btn-block") }}
+    </div>
+</form>
+<ul class="list-group mt-3">
+    {% for note in notes %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            {{ note.content }}
+            <form method="POST" action="{{ url_for('delete_note', note_id=note.id) }}" style="display:inline;">
+                {{ form.hidden_tag() }}
+                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+            </form>
+        </li>
+    {% endfor %}
+</ul>
+
+{% endblock %}
