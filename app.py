@@ -191,7 +191,7 @@ def view_user(user_id):
     notes = Note.query.filter_by(user_id=user.id).order_by(Note.date.desc()).all()
 
     note_form = NoteForm()
-    hidden_form = HiddenForm()  # Ensure HiddenForm is passed to the template
+    bucket_form = BucketForm()  # This should be the form that has the 'category' field
 
     return render_template(
         'view_user.html', 
@@ -203,7 +203,7 @@ def view_user(user_id):
         pto_total=pto_total, 
         emergency_total=emergency_total, 
         vacation_total=vacation_total,
-        form=hidden_form,  # Pass the hidden form
+        bucket_form=bucket_form,  # Pass the correct form
         note_form=note_form  # Pass the note form
     )
     
