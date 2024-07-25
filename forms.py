@@ -39,7 +39,11 @@ class AddTimeForm(FlaskForm):
     category = SelectField('Category', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
     hours = FloatField('Hours', validators=[DataRequired()])
     submit = SubmitField('Add Time')
-
+    
+class BucketForm(FlaskForm):
+    category = SelectField('Category', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
+    submit = SubmitField('Submit')
+    
 class EditBucketForm(FlaskForm):
     category = SelectField('Category', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
     new_value = FloatField('New Value', validators=[DataRequired()])
