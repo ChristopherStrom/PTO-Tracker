@@ -128,6 +128,8 @@ def edit_user(user_id):
         user.start_date = form.start_date.data
         user.status = form.status.data
         user.role = form.role.data
+        user.start_period = form.start_period.data
+        user.end_period = form.end_period.data
         if form.password.data:  # Update password if provided
             user.set_password(form.password.data)
         db.session.commit()
