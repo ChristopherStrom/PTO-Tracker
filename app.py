@@ -163,6 +163,21 @@ def edit_user(user_id):
     
     return render_template('edit_user.html', form=form, user=user)
     
+@app.route('/edit_bucket/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def edit_bucket(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        flash('User not found.', 'danger')
+        return redirect(url_for('view_user', user_id=user_id))
+    
+    form = BucketForm()
+    if form.validate_on_submit():
+        flash('Bucket updated successfully.', 'success')
+        return redirect(url_for('view_user', user_id=user_id))
+    
+    return render_template('edit_bucket.html', form=form, user=user)
+   
 @app.route('/view_user/<int:user_id>', methods=['GET'])
 @login_required
 def view_user(user_id):
