@@ -51,18 +51,18 @@
     <div class="col-md-4">
         {% if current_user.role == 'admin' %}
             <h3>Edit Buckets</h3>
-            <form method="POST">
-                {{ form.hidden_tag() }}
+            <form method="POST" action="{{ url_for('edit_bucket', user_id=user.id) }}">
+                {{ bucket_form.hidden_tag() }}
                 <div class="form-group">
-                    {{ form.category.label(class="form-label") }}
-                    {{ form.category(class="form-control") }}
+                    {{ bucket_form.category.label(class="form-label") }}
+                    {{ bucket_form.category(class="form-control") }}
                 </div>
                 <div class="form-group">
-                    {{ form.new_value.label(class="form-label") }}
-                    {{ form.new_value(class="form-control") }}
+                    {{ bucket_form.new_value.label(class="form-label") }}
+                    {{ bucket_form.new_value(class="form-control") }}
                 </div>
                 <div class="form-group">
-                    {{ form.submit(class="btn btn-primary btn-block") }}
+                    {{ bucket_form.submit(class="btn btn-primary btn-block") }}
                 </div>
             </form>
         {% endif %}
@@ -106,7 +106,7 @@
                 <td>
                     {% if current_user.role == 'admin' %}
                         <form method="POST" action="{{ url_for('delete_time_off', time_off_id=time_off.id) }}" style="display:inline;">
-                            {{ form.hidden_tag() }}
+                            {{ hidden_form.hidden_tag() }}
                             <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                         </form>
                     {% else %}
@@ -124,7 +124,6 @@
         <tr>
             <th>Date</th>
             <th>Category</th>
-            <th>Old Value</th>
             <th>New Value</th>
             <th>Actions</th>
         </tr>
@@ -134,12 +133,11 @@
             <tr>
                 <td>{{ change.date }}</td>
                 <td>{{ change.category }}</td>
-                <td>{{ change.old_value }}</td>
                 <td>{{ change.new_value }}</td>
                 <td>
                     {% if current_user.role == 'admin' %}
                         <form method="POST" action="{{ url_for('delete_bucket_change', bucket_change_id=change.id) }}" style="display:inline;">
-                            {{ form.hidden_tag() }}
+                            {{ hidden_form.hidden_tag() }}
                             <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                         </form>
                     {% else %}
@@ -178,7 +176,7 @@
                 <td>
                     {% if current_user.role == 'admin' or current_user.id == note.user_id %}
                         <form method="POST" action="{{ url_for('delete_note', note_id=note.id) }}" style="display:inline;">
-                            {{ form.hidden_tag() }}
+                            {{ hidden_form.hidden_tag() }}
                             <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                         </form>
                     {% else %}
