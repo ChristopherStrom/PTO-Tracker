@@ -24,8 +24,6 @@ class EditUserForm(FlaskForm):
     status = SelectField('Status', choices=[('active', 'Active'), ('inactive', 'Inactive')], validators=[DataRequired()])
     role = SelectField('Role', choices=[('user', 'User'), ('admin', 'Admin')], validators=[DataRequired()])
     password = PasswordField('Password', validators=[Length(min=0, max=20)])  # Allow empty password for no change
-    period_start_date = DateField('Current Period Start Date', validators=[DataRequired()])
-    period_end_date = DateField('Current Period End Date', validators=[DataRequired()])
     submit = SubmitField('Update User')
 
 class TimeOffForm(FlaskForm):
@@ -52,5 +50,9 @@ class NoteForm(FlaskForm):
 class AddPeriodForm(FlaskForm):
     start_date = DateField('Start Date', validators=[DataRequired()])
     end_date = DateField('End Date', validators=[DataRequired()])
+    user_id = HiddenField('User ID', validators=[DataRequired()])
     is_current = BooleanField('Is Current')
     submit = SubmitField('Add Period')
+
+class HiddenForm(FlaskForm):
+    hidden_field = HiddenField('Hidden Field')
