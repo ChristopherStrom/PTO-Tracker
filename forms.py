@@ -41,7 +41,8 @@ class AddTimeForm(FlaskForm):
     submit = SubmitField('Add Time')
     
 class BucketForm(FlaskForm):
-    category = SelectField('Category', choices=[('pto', 'PTO'), ('emergency', 'Emergency'), ('vacation', 'Vacation')], validators=[DataRequired()])
+    category = StringField('Category', validators=[DataRequired()])
+    new_value = IntegerField('New Value', validators=[DataRequired()])
     submit = SubmitField('Submit')
     
 class EditBucketForm(FlaskForm):
