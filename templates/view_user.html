@@ -20,21 +20,23 @@
         <ul class="list-group mb-3">
             <li class="list-group-item"><strong>Start Date:</strong> {{ user.start_date }}</li>
             <li class="list-group-item"><strong>Birth Date:</strong> {{ user.birth_date }}</li>
-            <li class="list-group-item"><strong>PTO Hours:</strong>
+            <li class="list-group-item"><strong>Start Period:</strong> {{ user.start_period }}</li>
+            <li class="list-group-item"><strong>End Period:</strong> {{ user.end_period or 'N/A' }}</li>
+            <li class="list-group-item"><strong>PTO Hours:</strong> 
                 <ul>
                     <li>Initial: {{ initial_pto_total }}</li>
                     <li>Used: {{ used_pto_hours }}</li>
                     <li>Remaining: {{ pto_total }}</li>
                 </ul>
             </li>
-            <li class="list-group-item"><strong>Emergency Hours:</strong>
+            <li class="list-group-item"><strong>Emergency Hours:</strong> 
                 <ul>
                     <li>Initial: {{ initial_emergency_total }}</li>
                     <li>Used: {{ used_emergency_hours }}</li>
                     <li>Remaining: {{ emergency_total }}</li>
                 </ul>
             </li>
-            <li class="list-group-item"><strong>Vacation Hours:</strong>
+            <li class="list-group-item"><strong>Vacation Hours:</strong> 
                 <ul>
                     <li>Initial: {{ initial_vacation_total }}</li>
                     <li>Used: {{ used_vacation_hours }}</li>
