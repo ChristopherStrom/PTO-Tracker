@@ -19,13 +19,15 @@ class AddUserForm(FlaskForm):
     submit = SubmitField('Add User')
 
 class EditUserForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
-    birth_date = DateField('Birth Date', validators=[DataRequired()])
-    start_date = DateField('Start Date', validators=[DataRequired()])
+    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=150)])
+    birth_date = DateField('Birth Date', format='%Y-%m-%d', validators=[DataRequired()])
+    start_date = DateField('Start Date', format='%Y-%m-%d', validators=[DataRequired()])
     status = SelectField('Status', choices=[('active', 'Active'), ('inactive', 'Inactive')], validators=[DataRequired()])
-    role = SelectField('Role', choices=[('user', 'User'), ('admin', 'Admin')], validators=[DataRequired()])
-    password = PasswordField('Password', validators=[Length(min=0, max=20)])  # Allow empty password for no change
-    submit = SubmitField('Update User')
+    role = SelectField('Role', choices=[('admin', 'Admin'), ('user', 'User')], validators=[DataRequired()])
+    password = PasswordField('Password')
+    start_period = DateField('Start Period', format='%Y-%m-%d')  # New field
+    end_period = DateField('End Period', format='%Y-%m-%d', validators=[Optional()])  # New field
+    submit = SubmitField('Save Changes')
 
 class TimeOffForm(FlaskForm):
     start_date = DateField('Start Date', format='%Y-%m-%d', validators=[DataRequired()])
