@@ -190,6 +190,9 @@ def view_user(user_id):
     bucket_changes = BucketChange.query.filter_by(user_id=user.id, period_id=current_period.id).order_by(BucketChange.date.desc()).all()
     notes = Note.query.filter_by(user_id=user.id).order_by(Note.date.desc()).all()
 
+    note_form = NoteForm()
+    hidden_form = HiddenForm()  # Ensure HiddenForm is passed to the template
+
     return render_template(
         'view_user.html', 
         user=user, 
@@ -199,9 +202,11 @@ def view_user(user_id):
         notes=notes, 
         pto_total=pto_total, 
         emergency_total=emergency_total, 
-        vacation_total=vacation_total
+        vacation_total=vacation_total,
+        form=hidden_form,  # Pass the hidden form
+        note_form=note_form  # Pass the note form
     )
-
+    
 @app.route('/add_note/<int:user_id>', methods=['POST'])
 @login_required
 def add_note(user_id):
