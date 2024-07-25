@@ -1,4 +1,3 @@
-# app.py
 from datetime import datetime, timedelta
 from flask import Flask, render_template, url_for, flash, redirect, request, session, make_response
 from flask_sqlalchemy import SQLAlchemy
@@ -162,22 +161,33 @@ def edit_user(user_id):
         return redirect(url_for('dashboard'))
     
     return render_template('edit_user.html', form=form, user=user)
-    
-@app.route('/edit_bucket/<int:user_id>', methods=['GET', 'POST'])
+
+@app.route('/edit_bucket/<int:user_id>', methods=['POST'])
 @login_required
 def edit_bucket(user_id):
-    user = User.query.get(user_id)
-    if not user:
-        flash('User not found.', 'danger')
+    user = User.query.get_or_404(user_id)
+    if current_user.role != 'admin':
+        flash('Unauthorized access', 'danger')
         return redirect(url_for('view_user', user_id=user_id))
     
     form = BucketForm()
     if form.validate_on_submit():
-        flash('Bucket updated successfully.', 'success')
-        return redirect(url_for('view_user', user_id=user_id))
+        # Logic to update the bucket for the user
+        category = form.category.data
+        new_value = form.new_value.data
+        current_period = Period.query.filter_by(user_id=user_id, is_current=True).first()
+        
+        if current_period:
+            old_value = db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category=category, period_id=current_period.id).scalar() or 0
+            bucket_change = BucketChange(category=category, old_value=old_value, new_value=new_value, user_id=user.id, period_id=current_period.id)
+            db.session.add(bucket_change)
+            db.session.commit()
+            flash('Bucket updated successfully.', 'success')
+        else:
+            flash('No current period set for this user. Please set a current period first.', 'danger')
     
-    return render_template('edit_bucket.html', form=form, user=user)
-   
+    return redirect(url_for('view_user', user_id=user_id))
+
 @app.route('/view_user/<int:user_id>', methods=['GET'])
 @login_required
 def view_user(user_id):
@@ -220,7 +230,7 @@ def view_user(user_id):
         bucket_form=bucket_form,  # Pass the correct form
         note_form=note_form  # Pass the note form
     )
-    
+
 @app.route('/add_note/<int:user_id>', methods=['POST'])
 @login_required
 def add_note(user_id):
@@ -248,7 +258,6 @@ def delete_note(note_id):
     flash('Note deleted successfully', 'success')
     return redirect(url_for('view_user', user_id=user_id))
 
-
 @app.route('/add_time_off/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def add_time_off(user_id):
@@ -257,6 +266,7 @@ def add_time_off(user_id):
         return redirect(url_for('dashboard'))
     form = TimeOffForm()
     user = User.query.get_or_404(user_id)
+    current_period = Period.query.filter_by(user_id=user_id, is_current=True).first()
     if form.validate_on_submit():
         try:
             delta = (form.end_date.data - form.start_date.data).days + 1
@@ -273,7 +283,6 @@ def add_time_off(user_id):
             flash(f'An error occurred: {e}', 'danger')
     return render_template('add_time_off.html', form=form, user=user)
 
-
 @app.route('/add_time/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def add_time(user_id):
@@ -285,18 +294,16 @@ def add_time(user_id):
     if form.validate_on_submit():
         old_value = 0
         new_value = 0
+        current_period = Period.query.filter_by(user_id=user_id, is_current=True).first()
         if form.category.data == 'pto':
-            old_value = user.pto_hours
-            user.pto_hours += form.hours.data
-            new_value = user.pto_hours
+            old_value = db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='pto', period_id=current_period.id).scalar() or 0
+            new_value = old_value + form.hours.data
         elif form.category.data == 'emergency':
-            old_value = user.emergency_hours
-            user.emergency_hours += form.hours.data
-            new_value = user.emergency_hours
+            old_value = db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='emergency', period_id=current_period.id).scalar() or 0
+            new_value = old_value + form.hours.data
         elif form.category.data == 'vacation':
-            old_value = user.vacation_hours
-            user.vacation_hours += form.hours.data
-            new_value = user.vacation_hours
+            old_value = db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='vacation', period_id=current_period.id).scalar() or 0
+            new_value = old_value + form.hours.data
         
         bucket_change = BucketChange(category=form.category.data, old_value=old_value, new_value=new_value, user_id=user.id, period_id=current_period.id)
         db.session.add(bucket_change)
@@ -304,7 +311,6 @@ def add_time(user_id):
         flash(f'Successfully added {form.hours.data} hours to {form.category.data} for {user.username}', 'success')
         return redirect(url_for('view_user', user_id=user.id))
     return render_template('add_time.html', form=form, user=user)
-
 
 @app.route('/delete_time_off/<int:time_off_id>', methods=['POST'])
 @login_required
