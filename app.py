@@ -130,13 +130,12 @@ def edit_user(user_id):
     user = User.query.get_or_404(user_id)
     current_period = Period.query.filter_by(user_id=user_id, is_current=True).first()
     
+    form = EditUserForm(obj=user)
+    
     if request.method == 'GET':
-        form = EditUserForm(obj=user)
         if current_period:
             form.period_start_date.data = current_period.start_date
             form.period_end_date.data = current_period.end_date
-    else:
-        form = EditUserForm()
     
     if form.validate_on_submit():
         user.username = form.username.data
@@ -164,7 +163,7 @@ def edit_user(user_id):
         return redirect(url_for('dashboard'))
     
     return render_template('edit_user.html', form=form, user=user)
-
+    
 @app.route('/view_user/<int:user_id>', methods=['GET'])
 @login_required
 def view_user(user_id):
