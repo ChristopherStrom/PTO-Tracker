@@ -17,7 +17,7 @@ class User(UserMixin, db.Model):
     pto_hours = db.Column(db.Float, default=0.0)
     emergency_hours = db.Column(db.Float, default=0.0)
     vacation_hours = db.Column(db.Float, default=0.0)
-    tart_period = db.Column(db.Date, default=datetime.utcnow)
+    start_period = db.Column(db.Date, default=datetime.utcnow)
     end_period = db.Column(db.Date, nullable=True)
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
