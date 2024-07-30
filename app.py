@@ -427,6 +427,11 @@ def reset_period(user_id):
         bucket_changes = BucketChange.query.filter_by(user_id=user_id).order_by(BucketChange.date.desc()).all()
         time_offs = TimeOff.query.filter_by(user_id=user_id).order_by(TimeOff.date.desc()).all()
 
+        # Update user object for current state
+        user.pto_hours = pto_total
+        user.emergency_hours = emergency_total
+        user.vacation_hours = vacation_total
+
         # Generate PDF
         rendered = render_template('user_report.html', user=user, bucket_changes=bucket_changes, time_offs=time_offs, initial_pto_total=initial_pto_total, used_pto_hours=used_pto_hours, pto_total=pto_total, initial_emergency_total=initial_emergency_total, used_emergency_hours=used_emergency_hours, emergency_total=emergency_total, initial_vacation_total=initial_vacation_total, used_vacation_hours=used_vacation_hours, vacation_total=vacation_total)
         pdf = HTML(string=rendered).write_pdf()
