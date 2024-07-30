@@ -291,7 +291,6 @@ def add_time_off(user_id):
             flash(f'An error occurred: {e}', 'danger')
     return render_template('add_time_off.html', form=form, user=user)
 
-
 @app.route('/add_time/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def add_time(user_id):
@@ -318,6 +317,15 @@ def add_time(user_id):
             user.emergency_hours += form.hours.data
         elif form.category.data == 'Vacation':
             user.vacation_hours += form.hours.data
+        
+        # Create a new bucket change record
+        bucket_change = BucketChange(
+            category=form.category.data,
+            old_value=0,  # For add time, old value is considered as 0
+            new_value=form.hours.data,
+            user_id=user.id
+        )
+        db.session.add(bucket_change)
 
         db.session.commit()
         flash(f'Added {form.hours.data} hours to {form.category.data} for {user.username}', 'success')
@@ -396,9 +404,6 @@ def reset_period(user_id):
 
     user = User.query.get_or_404(user_id)
 
-    # Log user information
-    logging.info(f"Resetting period for user: {user.username}")
-
     try:
         # Generate PDF
         rendered = render_template('user_report.html', user=user)
@@ -413,18 +418,20 @@ def reset_period(user_id):
         TimeOff.query.filter_by(user_id=user_id).delete()
         BucketChange.query.filter_by(user_id=user_id).delete()
         db.session.commit()
-        logging.info(f"Deleted all time off and bucket changes for user: {user.username}")
-
+        
         # Flash message
         flash(f'Reset period for {user.username}. Please update the period dates.', 'success')
+
+        # Return the response to download the PDF
+        return response
     except Exception as e:
         logging.error(f"Error resetting period for user: {user.username}, error: {str(e)}")
         flash('An error occurred while resetting the period. Please try again.', 'danger')
         return redirect(url_for('view_user', user_id=user_id))
-
-    # Redirect to the edit user page after downloading the PDF
-    return response
-
+    finally:
+        # Redirect to the edit user page after processing the request
+        return redirect(url_for('edit_user', user_id=user_id))
+        
 @app.route('/set_session')
 def set_session():
     session['test'] = 'It works!'
