@@ -427,20 +427,28 @@ def reset_period(user_id):
         bucket_changes = BucketChange.query.filter_by(user_id=user_id).order_by(BucketChange.date.desc()).all()
         time_offs = TimeOff.query.filter_by(user_id=user_id).order_by(TimeOff.date.desc()).all()
 
-        # Update user object for current state
-        user.pto_hours = pto_total
-        user.emergency_hours = emergency_total
-        user.vacation_hours = vacation_total
-
         # Generate PDF
         rendered = render_template('user_report.html', user=user, bucket_changes=bucket_changes, time_offs=time_offs, initial_pto_total=initial_pto_total, used_pto_hours=used_pto_hours, pto_total=pto_total, initial_emergency_total=initial_emergency_total, used_emergency_hours=used_emergency_hours, emergency_total=emergency_total, initial_vacation_total=initial_vacation_total, used_vacation_hours=used_vacation_hours, vacation_total=vacation_total)
         pdf = HTML(string=rendered).write_pdf()
 
         # Save PDF to a file
-        pdf_filename = f'{user.username}_report.pdf'
-        pdf_path = os.path.join(app.static_folder, pdf_filename)
+        archive_folder = os.path.join(app.static_folder, 'archive')
+        os.makedirs(archive_folder, exist_ok=True)
+        
+        # Build the filename with username, start period, and end period
+        pdf_filename = f'{user.username}_{user.start_period}_{user.end_period or "N/A"}.pdf'.replace(' ', '_')
+        
+        # Handle existing files by appending a counter
+        original_pdf_filename = pdf_filename
+        counter = 1
+        while os.path.exists(os.path.join(archive_folder, pdf_filename)):
+            pdf_filename = f'{original_pdf_filename.split(".pdf")[0]}-{counter}.pdf'
+            counter += 1
+        
+        pdf_path = os.path.join(archive_folder, pdf_filename)
         with open(pdf_path, 'wb') as f:
             f.write(pdf)
+        
         logging.info(f"PDF saved at {pdf_path}")
 
         # Redirect to complete reset period
@@ -475,7 +483,7 @@ def complete_reset_period(user_id):
 
     # Redirect to the edit user page
     return redirect(url_for('edit_user', user_id=user_id))
-
+    
 @app.route('/set_session')
 def set_session():
     session['test'] = 'It works!'
