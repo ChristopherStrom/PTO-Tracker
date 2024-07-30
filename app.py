@@ -429,7 +429,32 @@ def reset_period(user_id):
         flash('An error occurred while resetting the period. Please try again.', 'danger')
         return redirect(url_for('view_user', user_id=user_id))
 
-        
+ @app.route('/complete_reset_period/<int:user_id>')
+@login_required
+def complete_reset_period(user_id):
+    if current_user.role != 'admin':
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('dashboard'))
+
+    user = User.query.get_or_404(user_id)
+
+    try:
+        # Delete all time off and bucket entries for the user
+        TimeOff.query.filter_by(user_id=user_id).delete()
+        BucketChange.query.filter_by(user_id=user_id).delete()
+        db.session.commit()
+        logging.info(f"Deleted all time off and bucket changes for user: {user.username}")
+
+        # Flash message
+        flash(f'Reset period for {user.username}. Please update the period dates.', 'success')
+    except Exception as e:
+        logging.error(f"Error completing reset period for user: {user.username}, error: {str(e)}")
+        flash('An error occurred while completing the reset period. Please try again.', 'danger')
+        return redirect(url_for('view_user', user_id=user_id))
+
+    # Redirect to the edit user page
+    return redirect(url_for('edit_user', user_id=user_id))
+       
 @app.route('/set_session')
 def set_session():
     session['test'] = 'It works!'
