@@ -358,46 +358,6 @@ def delete_time_off(time_off_id):
     flash('Time off entry deleted successfully', 'success')
     return redirect(url_for('view_user', user_id=user_id))
 
-@app.route('/delete_bucket_change/<int:bucket_change_id>', methods=['POST'])
-@login_required
-def delete_bucket_change(bucket_change_id):
-    bucket_change = BucketChange.query.get_or_404(bucket_change_id)
-    user_id = bucket_change.user_id
-    if current_user.role != 'admin' and current_user.id != user_id:
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('dashboard'))
-    user = User.query.get_or_404(user_id)
-    
-    if bucket_change.category == 'pto':
-        user.pto_hours -= (bucket_change.new_value - bucket_change.old_value)
-    elif bucket_change.category == 'emergency':
-        user.emergency_hours -= (bucket_change.new_value - bucket_change.old_value)
-    elif bucket_change.category == 'vacation':
-        user.vacation_hours -= (bucket_change.new_value - bucket_change.old_value)
-
-    db.session.delete(bucket_change)
-    db.session.commit()
-    flash('Bucket change entry deleted successfully', 'success')
-    return redirect(url_for('view_user', user_id=user_id))
-
-@app.route('/update_status/<int:user_id>', methods=['POST'])
-@login_required
-def update_status(user_id):
-    if current_user.role != 'admin':
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('dashboard'))
-    
-    user = User.query.get_or_404(user_id)
-    new_status = request.form.get('status')
-    if new_status:
-        user.status = new_status
-        db.session.commit()
-        flash(f'User status updated to {new_status}', 'success')
-    else:
-        flash('Invalid status update request', 'danger')
-    
-    return redirect(url_for('dashboard'))
-
 @app.route('/reset_period/<int:user_id>')
 @login_required
 def reset_period(user_id):
@@ -411,8 +371,24 @@ def reset_period(user_id):
     logging.info(f"Resetting period for user: {user.username}")
 
     try:
+        # Collect data before deletion
+        initial_pto_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='pto').scalar() or 0, 2)
+        initial_emergency_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='emergency').scalar() or 0, 2)
+        initial_vacation_total = round(db.session.query(func.sum(BucketChange.new_value)).filter_by(user_id=user_id, category='vacation').scalar() or 0, 2)
+
+        used_pto_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='pto').scalar() or 0, 2)
+        used_emergency_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='emergency').scalar() or 0, 2)
+        used_vacation_hours = round(db.session.query(func.sum(TimeOff.hours)).filter_by(user_id=user_id, reason='vacation').scalar() or 0, 2)
+
+        pto_total = initial_pto_total - used_pto_hours
+        emergency_total = initial_emergency_total - used_emergency_hours
+        vacation_total = initial_vacation_total - used_vacation_hours
+
+        bucket_changes = BucketChange.query.filter_by(user_id=user_id).order_by(BucketChange.date.desc()).all()
+        time_offs = TimeOff.query.filter_by(user_id=user_id).order_by(TimeOff.date.desc()).all()
+
         # Generate PDF
-        rendered = render_template('user_report.html', user=user)
+        rendered = render_template('user_report.html', user=user, bucket_changes=bucket_changes, time_offs=time_offs, initial_pto_total=initial_pto_total, used_pto_hours=used_pto_hours, pto_total=pto_total, initial_emergency_total=initial_emergency_total, used_emergency_hours=used_emergency_hours, emergency_total=emergency_total, initial_vacation_total=initial_vacation_total, used_vacation_hours=used_vacation_hours, vacation_total=vacation_total)
         pdf = HTML(string=rendered).write_pdf()
 
         # Save PDF to a file
