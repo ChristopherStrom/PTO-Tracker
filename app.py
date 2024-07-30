@@ -407,22 +407,26 @@ def reset_period(user_id):
 
     user = User.query.get_or_404(user_id)
 
+    # Log user information
+    logging.info(f"Resetting period for user: {user.username}")
+
     try:
         # Generate PDF
         rendered = render_template('user_report.html', user=user)
         pdf = HTML(string=rendered).write_pdf()
 
-        # Save the PDF to a file in the static folder
+        # Save PDF to static directory
         pdf_filename = f"{user.username}_report.pdf"
         pdf_path = os.path.join(app.static_folder, pdf_filename)
-        with open(pdf_path, 'wb') as f:
-            f.write(pdf)
+        with open(pdf_path, "wb") as pdf_file:
+            pdf_file.write(pdf)
 
         # Delete all time off and bucket entries for the user
         TimeOff.query.filter_by(user_id=user_id).delete()
         BucketChange.query.filter_by(user_id=user_id).delete()
         db.session.commit()
-        
+        logging.info(f"Deleted all time off and bucket changes for user: {user.username}")
+
         # Flash message
         flash(f'Reset period for {user.username}. Please update the period dates.', 'success')
     except Exception as e:
@@ -430,8 +434,14 @@ def reset_period(user_id):
         flash('An error occurred while resetting the period. Please try again.', 'danger')
         return redirect(url_for('view_user', user_id=user_id))
 
-    # Render a template with a download link
-    return render_template('reset_period.html', pdf_filename=pdf_filename, user_id=user_id)
+    # Redirect to the edit user page after downloading the PDF
+    return render_template(
+        'reset_period.html', 
+        user_first_name=user.username.split('.')[0], 
+        user_last_name=user.username.split('.')[1], 
+        pdf_filename=pdf_filename, 
+        user_id=user_id
+    )
         
 @app.route('/set_session')
 def set_session():
