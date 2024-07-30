@@ -25,5 +25,51 @@
         <li><strong>Start Period:</strong> {{ user.start_period }}</li>
         <li><strong>End Period:</strong> {{ user.end_period }}</li>
     </ul>
+    <h2>Bucket Changes</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Category</th>
+                <th>Old Value</th>
+                <th>New Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for change in bucket_changes %}
+            <tr>
+                <td>{{ change.date }}</td>
+                <td>{{ change.category }}</td>
+                <td>{{ change.old_value }}</td>
+                <td>{{ change.new_value }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h2>Time Off</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Hours</th>
+                <th>Reason</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for time_off in time_offs %}
+            <tr>
+                <td>{{ time_off.date }}</td>
+                <td>{{ time_off.hours }}</td>
+                <td>{{ time_off.reason }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h2>Totals</h2>
+    <ul>
+        <li><strong>Total PTO Hours:</strong> {{ initial_pto_total }} (Used: {{ used_pto_hours }}, Remaining: {{ pto_total }})</li>
+        <li><strong>Total Emergency Hours:</strong> {{ initial_emergency_total }} (Used: {{ used_emergency_hours }}, Remaining: {{ emergency_total }})</li>
+        <li><strong>Total Vacation Hours:</strong> {{ initial_vacation_total }} (Used: {{ used_vacation_hours }}, Remaining: {{ vacation_total }})</li>
+    </ul>
 </body>
 </html>
