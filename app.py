@@ -395,21 +395,25 @@ def reset_period(user_id):
     
     user = User.query.get_or_404(user_id)
     
-    # Reset the period logic (update start_period and end_period as needed)
-    user.start_period = datetime.utcnow()
-    user.end_period = None
-    db.session.commit()
-    
     # Generate PDF
     rendered = render_template('user_report.html', user=user)
     pdf = HTML(string=rendered).write_pdf()
     
-    # Create response
+    # Delete all time off and bucket entries for the user
+    TimeOff.query.filter_by(user_id=user_id).delete()
+    BucketChange.query.filter_by(user_id=user_id).delete()
+    db.session.commit()
+    
+    # Create response to download PDF
     response = make_response(pdf)
     response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = 'attachment; filename=user_report.pdf'
+    response.headers['Content-Disposition'] = f'attachment; filename={user.username}_report.pdf'
     
-    return response
+    # Flash message
+    flash(f'Reset period for {user.username}. Please update the period dates.', 'success')
+    
+    # Redirect to the edit user page after downloading the PDF
+    return response, redirect(url_for('edit_user', user_id=user_id))
 
 @app.route('/set_session')
 def set_session():
