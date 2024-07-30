@@ -433,10 +433,10 @@ def reset_period(user_id):
 
         # Save PDF to a file
         archive_folder = os.path.join(app.static_folder, 'archive')
-        os.makedirs(archive_folder, exist_ok=True)
+        os.makedirs(archive_folder, exist_ok=True)  # Ensure the archive folder exists
         
         # Build the filename with username, start period, and end period
-        pdf_filename = f'{user.username}_{user.start_period}_{user.end_period or "N/A"}.pdf'.replace(' ', '_')
+        pdf_filename = f'{user.username}_{user.start_period}_{user.end_period or "N_A"}.pdf'.replace(' ', '_').replace(':', '-')
         
         # Handle existing files by appending a counter
         original_pdf_filename = pdf_filename
