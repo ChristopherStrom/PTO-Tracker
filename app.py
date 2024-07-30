@@ -483,6 +483,16 @@ def complete_reset_period(user_id):
 
     # Redirect to the edit user page
     return redirect(url_for('edit_user', user_id=user_id))
+
+@app.route('/download_pdf/<path:filename>', methods=['GET'])
+@login_required
+def download_pdf(filename):
+    if current_user.role != 'admin':
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('dashboard'))
+
+    archive_folder = os.path.join(app.static_folder, 'archive')
+    return send_from_directory(directory=archive_folder, path=filename, as_attachment=True)
     
 @app.route('/set_session')
 def set_session():
