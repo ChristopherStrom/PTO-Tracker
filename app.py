@@ -413,7 +413,7 @@ def reset_period(user_id):
     flash(f'Reset period for {user.username}. Please update the period dates.', 'success')
     
     # Redirect to the edit user page after downloading the PDF
-    return response, redirect(url_for('edit_user', user_id=user_id))
+    return response
 
 @app.route('/set_session')
 def set_session():
