@@ -21,7 +21,7 @@
         }
     </script>
 </head>
-<body onload="downloadAndRedirect('{{ url_for('static', filename=pdf_filename) }}', '{{ url_for('edit_user', user_id=user_id) }}')">
+<body onload="downloadAndRedirect('{{ url_for('static', filename=pdf_filename) }}', '{{ url_for('complete_reset_period', user_id=user_id) }}')">
     <h1>Resetting Period for {{ username }}</h1>
     <p>Your report is being downloaded. You will be redirected shortly...</p>
 </body>
