@@ -429,7 +429,7 @@ def reset_period(user_id):
         flash('An error occurred while resetting the period. Please try again.', 'danger')
         return redirect(url_for('view_user', user_id=user_id))
 
- @app.route('/complete_reset_period/<int:user_id>')
+@app.route('/complete_reset_period/<int:user_id>')
 @login_required
 def complete_reset_period(user_id):
     if current_user.role != 'admin':
