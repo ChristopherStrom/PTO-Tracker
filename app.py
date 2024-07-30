@@ -409,10 +409,11 @@ def reset_period(user_id):
         rendered = render_template('user_report.html', user=user)
         pdf = HTML(string=rendered).write_pdf()
 
-        # Create response to download PDF
-        response = make_response(pdf)
-        response.headers['Content-Type'] = 'application/pdf'
-        response.headers['Content-Disposition'] = f'attachment; filename={user.username}_report.pdf'
+        # Save the PDF to a file
+        pdf_filename = f"{user.username}_report.pdf"
+        pdf_path = os.path.join(app.instance_path, pdf_filename)
+        with open(pdf_path, 'wb') as f:
+            f.write(pdf)
 
         # Delete all time off and bucket entries for the user
         TimeOff.query.filter_by(user_id=user_id).delete()
@@ -421,16 +422,13 @@ def reset_period(user_id):
         
         # Flash message
         flash(f'Reset period for {user.username}. Please update the period dates.', 'success')
-
-        # Return the response to download the PDF
-        return response
     except Exception as e:
         logging.error(f"Error resetting period for user: {user.username}, error: {str(e)}")
         flash('An error occurred while resetting the period. Please try again.', 'danger')
         return redirect(url_for('view_user', user_id=user_id))
-    finally:
-        # Redirect to the edit user page after processing the request
-        return redirect(url_for('edit_user', user_id=user_id))
+
+    # Render a template with a download link
+    return render_template('reset_period.html', pdf_filename=pdf_filename, user_id=user_id)
         
 @app.route('/set_session')
 def set_session():
