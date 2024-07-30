@@ -13,7 +13,7 @@
                     </select>
                 </div>
                 <a href="{{ url_for('view_user', user_id=user.id, export='pdf') }}" class="btn btn-info ml-2">Export to PDF</a>
-                <a href="{{ url_for('reset_period', user_id=user.id) }}" class="btn btn-warning ml-2">Reset Period</a>
+                <a href="#" onclick="confirmResetPeriod('{{ user.username }}', '{{ url_for('reset_period', user_id=user.id) }}')" class="btn btn-warning ml-2">Reset Period</a>
             </form>
         {% else %}
             <h2>{{ user.username }}</h2>
@@ -175,5 +175,13 @@
         </li>
     {% endfor %}
 </ul>
+
+<script>
+    function confirmResetPeriod(username, url) {
+        if (confirm('Are you sure you want to reset the period for ' + username + '? This will delete all time off and bucket entries for the current period.')) {
+            window.location.href = url;
+        }
+    }
+</script>
 
 {% endblock %}
