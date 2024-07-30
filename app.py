@@ -392,26 +392,35 @@ def reset_period(user_id):
     if current_user.role != 'admin':
         flash('Unauthorized access', 'danger')
         return redirect(url_for('dashboard'))
-    
+
     user = User.query.get_or_404(user_id)
-    
-    # Generate PDF
-    rendered = render_template('user_report.html', user=user)
-    pdf = HTML(string=rendered).write_pdf()
-    
-    # Delete all time off and bucket entries for the user
-    TimeOff.query.filter_by(user_id=user_id).delete()
-    BucketChange.query.filter_by(user_id=user_id).delete()
-    db.session.commit()
-    
-    # Create response to download PDF
-    response = make_response(pdf)
-    response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = f'attachment; filename={user.username}_report.pdf'
-    
-    # Flash message
-    flash(f'Reset period for {user.username}. Please update the period dates.', 'success')
-    
+
+    # Log user information
+    logging.info(f"Resetting period for user: {user.username}")
+
+    try:
+        # Generate PDF
+        rendered = render_template('user_report.html', user=user)
+        pdf = HTML(string=rendered).write_pdf()
+
+        # Create response to download PDF
+        response = make_response(pdf)
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'attachment; filename={user.username}_report.pdf'
+
+        # Delete all time off and bucket entries for the user
+        TimeOff.query.filter_by(user_id=user_id).delete()
+        BucketChange.query.filter_by(user_id=user_id).delete()
+        db.session.commit()
+        logging.info(f"Deleted all time off and bucket changes for user: {user.username}")
+
+        # Flash message
+        flash(f'Reset period for {user.username}. Please update the period dates.', 'success')
+    except Exception as e:
+        logging.error(f"Error resetting period for user: {user.username}, error: {str(e)}")
+        flash('An error occurred while resetting the period. Please try again.', 'danger')
+        return redirect(url_for('view_user', user_id=user_id))
+
     # Redirect to the edit user page after downloading the PDF
     return response
 
