@@ -386,6 +386,31 @@ def update_status(user_id):
     
     return redirect(url_for('dashboard'))
 
+@app.route('/reset_period/<int:user_id>')
+@login_required
+def reset_period(user_id):
+    if current_user.role != 'admin':
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    user = User.query.get_or_404(user_id)
+    
+    # Reset the period logic (update start_period and end_period as needed)
+    user.start_period = datetime.utcnow()
+    user.end_period = None
+    db.session.commit()
+    
+    # Generate PDF
+    rendered = render_template('user_report.html', user=user)
+    pdf = HTML(string=rendered).write_pdf()
+    
+    # Create response
+    response = make_response(pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'attachment; filename=user_report.pdf'
+    
+    return response
+
 @app.route('/set_session')
 def set_session():
     session['test'] = 'It works!'
