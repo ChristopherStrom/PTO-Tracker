@@ -420,6 +420,7 @@ def reset_period(user_id):
         pdf_path = os.path.join(app.root_path, pdf_filename)
         with open(pdf_path, 'wb') as f:
             f.write(pdf)
+        logging.info(f"PDF generated and saved at {pdf_path}")
 
         # Delete all time off and bucket entries for the user
         TimeOff.query.filter_by(user_id=user_id).delete()
