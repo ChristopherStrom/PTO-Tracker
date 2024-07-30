@@ -358,6 +358,46 @@ def delete_time_off(time_off_id):
     flash('Time off entry deleted successfully', 'success')
     return redirect(url_for('view_user', user_id=user_id))
 
+@app.route('/delete_bucket_change/<int:bucket_change_id>', methods=['POST'])
+@login_required
+def delete_bucket_change(bucket_change_id):
+    bucket_change = BucketChange.query.get_or_404(bucket_change_id)
+    user_id = bucket_change.user_id
+    if current_user.role != 'admin' and current_user.id != user_id:
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('dashboard'))
+    user = User.query.get_or_404(user_id)
+
+    if bucket_change.category == 'pto':
+        user.pto_hours -= (bucket_change.new_value - bucket_change.old_value)
+    elif bucket_change.category == 'emergency':
+        user.emergency_hours -= (bucket_change.new_value - bucket_change.old_value)
+    elif bucket_change.category == 'vacation':
+        user.vacation_hours -= (bucket_change.new_value - bucket_change.old_value)
+
+    db.session.delete(bucket_change)
+    db.session.commit()
+    flash('Bucket change entry deleted successfully', 'success')
+    return redirect(url_for('view_user', user_id=user_id))
+
+@app.route('/update_status/<int:user_id>', methods=['POST'])
+@login_required
+def update_status(user_id):
+    if current_user.role != 'admin':
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('dashboard'))
+
+    user = User.query.get_or_404(user_id)
+    new_status = request.form.get('status')
+    if new_status:
+        user.status = new_status
+        db.session.commit()
+        flash(f'User status updated to {new_status}', 'success')
+    else:
+        flash('Invalid status update request', 'danger')
+
+    return redirect(url_for('dashboard'))
+
 @app.route('/reset_period/<int:user_id>')
 @login_required
 def reset_period(user_id):
