@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        h1 { color: #333; }
+        table { width: 100%; border-collapse: collapse; }
+        table, th, td { border: 1px solid black; }
+        th, td { padding: 8px; text-align: left; }
+    </style>
+</head>
+<body>
+    <h1>User Report for {{ user.username }}</h1>
+    <ul>
+        <li><strong>Username:</strong> {{ user.username }}</li>
+        <li><strong>Birth Date:</strong> {{ user.birth_date }}</li>
+        <li><strong>Start Date:</strong> {{ user.start_date }}</li>
+        <li><strong>Status:</strong> {{ user.status }}</li>
+        <li><strong>Role:</strong> {{ user.role }}</li>
+        <li><strong>PTO Hours:</strong> {{ user.pto_hours }}</li>
+        <li><strong>Emergency Hours:</strong> {{ user.emergency_hours }}</li>
+        <li><strong>Vacation Hours:</strong> {{ user.vacation_hours }}</li>
+        <li><strong>Start Period:</strong> {{ user.start_period }}</li>
+        <li><strong>End Period:</strong> {{ user.end_period }}</li>
+    </ul>
+</body>
+</html>
