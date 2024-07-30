@@ -1,5 +1,4 @@
 import sys
-import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash
@@ -26,15 +25,17 @@ class User(db.Model):
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
-# Function to update the user's password
-def update_user_password(username, new_password):
+# Function to update the user's password or add the user if they don't exist
+def update_or_add_user(username, new_password):
     user = User.query.filter_by(username=username).first()
     if user:
         user.set_password(new_password)
-        db.session.commit()
-        return True
     else:
-        return False
+        user = User(username=username)
+        user.set_password(new_password)
+        db.session.add(user)
+    db.session.commit()
+    return user
 
 # Main function to run the script
 if __name__ == "__main__":
@@ -46,9 +47,9 @@ if __name__ == "__main__":
     new_password = sys.argv[2]
     
     with app.app_context():
-        success = update_user_password(username, new_password)
+        user = update_or_add_user(username, new_password)
     
-    if success:
-        print(f"The password for {username} has been updated.")
+    if user:
+        print(f"The password for {username} has been updated or user has been created.")
     else:
-        print(f"No user found with username: {username}")
+        print(f"Failed to update or create user: {username}")
