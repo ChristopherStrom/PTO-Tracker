@@ -15,6 +15,7 @@ import random
 import string
 import logging
 import io
+import shutil
 
 
 class HiddenForm(FlaskForm):
@@ -409,9 +410,9 @@ def reset_period(user_id):
         rendered = render_template('user_report.html', user=user)
         pdf = HTML(string=rendered).write_pdf()
 
-        # Save the PDF to a file
+        # Save the PDF to a file in the static folder
         pdf_filename = f"{user.username}_report.pdf"
-        pdf_path = os.path.join(app.instance_path, pdf_filename)
+        pdf_path = os.path.join(app.static_folder, pdf_filename)
         with open(pdf_path, 'wb') as f:
             f.write(pdf)
 
