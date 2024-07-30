@@ -422,7 +422,7 @@ def reset_period(user_id):
             f.write(pdf)
         logging.info(f"PDF saved at {pdf_path}")
 
-        # Return the download link
+        # Redirect to complete reset period
         return render_template('reset_period.html', pdf_filename=pdf_filename, user_id=user_id, username=user.username)
     except Exception as e:
         logging.error(f"Error resetting period for user: {user.username}, error: {str(e)}")
@@ -454,7 +454,7 @@ def complete_reset_period(user_id):
 
     # Redirect to the edit user page
     return redirect(url_for('edit_user', user_id=user_id))
-       
+
 @app.route('/set_session')
 def set_session():
     session['test'] = 'It works!'
