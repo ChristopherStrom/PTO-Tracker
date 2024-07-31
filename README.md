@@ -128,17 +128,10 @@ This license governs the use of the PTO Tracker application. By using this softw
 
 ## Non-Commercial Use
 
-You are free to use, modify, and distribute the PTO Tracker application for non-commercial purposes, subject to the following conditions:
+You are free to use, modify, and distribute the PTO Tracker application for commercial and non-commercial purposes, subject to the following conditions:
 
-- **Attribution**: You must give appropriate credit, provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.
-- **Non-Commercial**: You may not use the material for commercial purposes. 
+- **Attribution**: You must give appropriate credit and link back to this repo https://github.com/ChristopherStrom/PTO-Tracker/, provide a link to the license, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.
 - **No Additional Restrictions**: You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.
-
-## Commercial Use
-
-Commercial use of the PTO Tracker application, including modified versions, requires a paid license. To obtain a commercial license, please contact us at:
-
-**Email**: cstrom@clsio.com
 
 ## Disclaimer
 
