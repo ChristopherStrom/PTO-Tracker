@@ -436,28 +436,30 @@ def reset_period(user_id):
         rendered = render_template('user_report.html', user=user, bucket_changes=bucket_changes, time_offs=time_offs, initial_pto_total=initial_pto_total, used_pto_hours=used_pto_hours, pto_total=pto_total, initial_emergency_total=initial_emergency_total, used_emergency_hours=used_emergency_hours, emergency_total=emergency_total, initial_vacation_total=initial_vacation_total, used_vacation_hours=used_vacation_hours, vacation_total=vacation_total)
         pdf = HTML(string=rendered).write_pdf()
 
-        # Save PDF to a file
+        # Save PDF to a file in the archive
         archive_folder = os.path.join(app.static_folder, 'archive')
         os.makedirs(archive_folder, exist_ok=True)  # Ensure the archive folder exists
+        logging.info(f"Archive folder exists or created: {archive_folder}")
 
         # Build the filename with username, start period, and end period
         pdf_filename = f'{user.username}_{user.start_period}_{user.end_period or "N_A"}.pdf'.replace(' ', '_').replace(':', '-')
-
+        
         # Handle existing files by appending a counter
         original_pdf_filename = pdf_filename
         counter = 1
         while os.path.exists(os.path.join(archive_folder, pdf_filename)):
             pdf_filename = f'{original_pdf_filename.split(".pdf")[0]}-{counter}.pdf'
             counter += 1
-
+        
         pdf_path = os.path.join(archive_folder, pdf_filename)
         with open(pdf_path, 'wb') as f:
             f.write(pdf)
-
         logging.info(f"PDF saved at {pdf_path}")
 
-        # Provide the download link
-        return render_template('reset_period.html', pdf_filename=pdf_filename, user_id=user_id, username=user.username)
+        # Provide a download link for the PDF
+        download_link = url_for('download_pdf', filename=pdf_filename)
+
+        return render_template('reset_period.html', download_link=download_link, user_id=user_id, username=user.username)
     except Exception as e:
         logging.error(f"Error resetting period for user: {user.username}, error: {str(e)}")
         flash('An error occurred while resetting the period. Please try again.', 'danger')
@@ -497,6 +499,7 @@ def download_pdf(filename):
         return redirect(url_for('dashboard'))
 
     archive_folder = os.path.join(app.static_folder, 'archive')
+    logging.info(f"Serving PDF from archive folder: {archive_folder}")
     return send_from_directory(directory=archive_folder, path=filename, as_attachment=True)
     
 @app.route('/set_session')
