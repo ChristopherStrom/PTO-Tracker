@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, flash, redirect, request, session, make_response
+from flask import Flask, render_template, url_for, flash, redirect, request, session, make_response, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, current_user, logout_user, login_required
 from flask_migrate import Migrate
