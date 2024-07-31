@@ -439,24 +439,24 @@ def reset_period(user_id):
         # Save PDF to a file
         archive_folder = os.path.join(app.static_folder, 'archive')
         os.makedirs(archive_folder, exist_ok=True)  # Ensure the archive folder exists
-        
+
         # Build the filename with username, start period, and end period
         pdf_filename = f'{user.username}_{user.start_period}_{user.end_period or "N_A"}.pdf'.replace(' ', '_').replace(':', '-')
-        
+
         # Handle existing files by appending a counter
         original_pdf_filename = pdf_filename
         counter = 1
         while os.path.exists(os.path.join(archive_folder, pdf_filename)):
             pdf_filename = f'{original_pdf_filename.split(".pdf")[0]}-{counter}.pdf'
             counter += 1
-        
+
         pdf_path = os.path.join(archive_folder, pdf_filename)
         with open(pdf_path, 'wb') as f:
             f.write(pdf)
-        
+
         logging.info(f"PDF saved at {pdf_path}")
 
-        # Redirect to complete reset period
+        # Provide the download link
         return render_template('reset_period.html', pdf_filename=pdf_filename, user_id=user_id, username=user.username)
     except Exception as e:
         logging.error(f"Error resetting period for user: {user.username}, error: {str(e)}")
