@@ -270,14 +270,29 @@ def dashboard_pdf():
             'vacation_total': vacation_total
         })
 
-    # Render the PDF template without filter or actions
-    rendered = render_template('dashboard_pdf.html', user_data=user_data)
+    # Get the current timestamp
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-    # Define a CSS style for landscape orientation
-    landscape_css = CSS(string='@page { size: A4 landscape; margin: 1cm; }')
+    # Render the PDF template without filter or actions, including the timestamp
+    rendered = render_template('dashboard_pdf.html', user_data=user_data, timestamp=timestamp)
 
-    # Generate the PDF with landscape orientation
-    pdf = HTML(string=rendered).write_pdf(stylesheets=[landscape_css])
+    # Define CSS for landscape orientation and timestamp positioning
+    css = CSS(string='''
+        @page { 
+            size: A4 landscape; 
+            margin: 1cm; 
+        }
+        .timestamp {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            font-size: 8px;
+            color: grey;
+        }
+    ''')
+
+    # Generate the PDF with landscape orientation and timestamp CSS
+    pdf = HTML(string=rendered).write_pdf(stylesheets=[css])
 
     # Send the PDF as a downloadable file
     return send_file(
@@ -286,6 +301,7 @@ def dashboard_pdf():
         download_name='dashboard_report.pdf',
         as_attachment=True
     )
+
 @app.route('/add_note/<int:user_id>', methods=['POST'])
 @login_required
 def add_note(user_id):
