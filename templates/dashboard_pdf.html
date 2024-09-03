@@ -34,7 +34,7 @@
                     <td>{{ data.pto_total }}</td>
                     <td>{{ data.emergency_total }}</td>
                     <td>{{ data.vacation_total }}</td>
-                    <td>{{ data.user.birth_date or 'N/A' }}</td>
+                    <td>{{ data.user.birth_date.strftime('%B %d') if data.user.birth_date else 'N/A' }}</td>
                     <td>{{ data.user.end_period or 'N/A' }}</td>
                 </tr>
             {% endfor %}
