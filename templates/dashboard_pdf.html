@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h2>Dashboard Report</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Status</th>
+                <th>Role</th>
+                <th>PTO Hours</th>
+                <th>Emergency Hours</th>
+                <th>Vacation Hours</th>
+                <th>Birth Date</th>
+                <th>End Period</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in user_data %}
+                <tr>
+                    <td>{{ data.user.username }}</td>
+                    <td>{{ data.user.status }}</td>
+                    <td>{{ data.user.role }}</td>
+                    <td>{{ data.pto_total }}</td>
+                    <td>{{ data.emergency_total }}</td>
+                    <td>{{ data.vacation_total }}</td>
+                    <td>{{ data.user.birth_date or 'N/A' }}</td>
+                    <td>{{ data.user.end_period or 'N/A' }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
