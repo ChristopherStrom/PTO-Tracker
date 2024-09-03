@@ -239,6 +239,13 @@ def view_user():
         notes=notes
     )
 
+@app.route('/dashboard_pdf')
+@login_required
+def dashboard_pdf():
+    if current_user.role != 'admin':
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('dashboard'))
+
 @app.route('/add_note/<int:user_id>', methods=['POST'])
 @login_required
 def add_note(user_id):
