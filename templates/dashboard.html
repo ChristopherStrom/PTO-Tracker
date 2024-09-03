@@ -24,6 +24,8 @@
                 <th>PTO Hours</th>
                 <th>Emergency Hours</th>
                 <th>Vacation Hours</th>
+                <th>Start Period</th>
+                <th>End Period</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -36,6 +38,8 @@
                     <td>{{ data.pto_total }}</td>
                     <td>{{ data.emergency_total }}</td>
                     <td>{{ data.vacation_total }}</td>
+                    <td>{{ data.user.start_period or 'N/A' }}</td>
+                    <td>{{ data.user.end_period or 'N/A' }}</td>
                     <td>
                         <a href="{{ url_for('view_user', user_id=data.user.id) }}" class="btn btn-info btn-sm">View</a>
                         {% if current_user.role == 'admin' %}
@@ -57,4 +61,6 @@
             {% endfor %}
         </tbody>
     </table>
+    <!-- Print Screen Button -->
+    <button class="btn btn-secondary mt-3" onclick="window.print()">Print Dashboard Report</button>
 {% endblock %}
