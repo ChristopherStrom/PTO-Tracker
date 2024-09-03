@@ -3,6 +3,7 @@
     <h2>Dashboard</h2>
     {% if current_user.role == 'admin' %}
         <a href="{{ url_for('add_user') }}" class="btn btn-primary">Add User</a>
+        <a href="{{ url_for('dashboard_pdf') }}" class="btn btn-secondary mt-3">Export to PDF</a>
         <form method="GET" action="{{ url_for('dashboard') }}" class="mt-3">
             <div class="form-group">
                 <label for="role">Filter by Role</label>
@@ -60,7 +61,5 @@
                 </tr>
             {% endfor %}
         </tbody>
-    </table>
-    <!-- Print Screen Button -->
-    <button class="btn btn-secondary mt-3" onclick="window.print()">Print Dashboard Report</button>
+    </table>   
 {% endblock %}
