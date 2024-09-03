@@ -10,7 +10,7 @@ from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import func
 from wtforms import HiddenField
 from flask_wtf import FlaskForm
-from weasyprint import HTML
+from weasyprint import HTML, CSS 
 import random
 import string
 import logging
@@ -272,15 +272,20 @@ def dashboard_pdf():
 
     # Render the PDF template without filter or actions
     rendered = render_template('dashboard_pdf.html', user_data=user_data)
-    pdf = HTML(string=rendered).write_pdf()
+
+    # Define a CSS style for landscape orientation
+    landscape_css = CSS(string='@page { size: A4 landscape; margin: 1cm; }')
+
+    # Generate the PDF with landscape orientation
+    pdf = HTML(string=rendered).write_pdf(stylesheets=[landscape_css])
 
     # Send the PDF as a downloadable file
     return send_file(
         io.BytesIO(pdf),
         mimetype='application/pdf',
-        download_name='dashboard_report.pdf'
+        download_name='dashboard_report.pdf',
+        as_attachment=True
     )
-
 @app.route('/add_note/<int:user_id>', methods=['POST'])
 @login_required
 def add_note(user_id):
