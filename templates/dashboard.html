@@ -30,8 +30,8 @@
                 <th>PTO Hours</th>
                 <th>Emergency Hours</th>
                 <th>Vacation Hours</th>
-                <th style="width: 150px;">Birth Date</th>
-                <th style="width: 150px;">End Period</th>
+                <th style="width: 150px;">Birth Date</th> <!-- Adjusted width -->
+                <th style="width: 150px;">End Period</th> <!-- Adjusted width -->
                 <th>Actions</th>
             </tr>
         </thead>
@@ -58,7 +58,7 @@
                                 {% else %}
                                     green
                                 {% endif %}
-                            ;">{{ end_period }}</span>
+                            ;">{{ end_period.strftime('%Y-%m-%d') }}</span>
                         {% else %}
                             N/A
                         {% endif %}
