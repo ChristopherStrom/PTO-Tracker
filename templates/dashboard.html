@@ -30,8 +30,8 @@
                 <th>PTO Hours</th>
                 <th>Emergency Hours</th>
                 <th>Vacation Hours</th>
-                <th style="width: 150px;">Birth Date</th> <!-- Adjusted width -->
-                <th style="width: 150px;">End Period</th> <!-- Adjusted width -->
+                <th style="width: 150px;">Birth Date</th>
+                <th style="width: 150px;">End Period</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -48,8 +48,7 @@
                     <td>
                         {% if data.user.end_period %}
                             {% set end_period = data.user.end_period %}
-                            {% set today = date() %}
-                            {% set days_diff = (end_period - today).days %}
+                            {% set days_diff = (end_period - current_date).days %}
                             <span style="color: 
                                 {% if days_diff < 0 %}
                                     red
