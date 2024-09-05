@@ -30,8 +30,8 @@
                 <th>PTO Hours</th>
                 <th>Emergency Hours</th>
                 <th>Vacation Hours</th>
-                <th style="width: 150px;">Birth Date</th> <!-- Adjusted width -->
-                <th style="width: 150px;">End Period</th> <!-- Adjusted width -->
+                <th style="width: 150px;">Birth Date</th>
+                <th style="width: 150px;">End Period</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -45,7 +45,24 @@
                     <td>{{ data.emergency_total }}</td>
                     <td>{{ data.vacation_total }}</td>
                     <td>{{ data.user.birth_date or 'N/A' }}</td>
-                    <td>{{ data.user.end_period or 'N/A' }}</td>
+                    <td>
+                        {% if data.user.end_period %}
+                            {% set end_period = data.user.end_period %}
+                            {% set today = date() %}
+                            {% set days_diff = (end_period - today).days %}
+                            <span style="color: 
+                                {% if days_diff < 0 %}
+                                    red
+                                {% elif days_diff <= 7 %}
+                                    yellow
+                                {% else %}
+                                    green
+                                {% endif %}
+                            ;">{{ end_period }}</span>
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </td>
                     <td>
                         <a href="{{ url_for('view_user', user_id=data.user.id) }}" class="btn btn-info btn-sm">View</a>
                         {% if current_user.role == 'admin' %}
