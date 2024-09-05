@@ -91,8 +91,9 @@ def dashboard():
             })
 
         form = HiddenForm()
+        current_date = datetime.today().date()  # Get the current date
 
-        return render_template('dashboard.html', user_data=user_data, filter_role=filter_role, form=form)
+        return render_template('dashboard.html', user_data=user_data, filter_role=filter_role, form=form, current_date=current_date)
     except Exception as e:
         logging.error(f"Error in dashboard route: {e}")
         flash('An error occurred while loading the dashboard.', 'danger')
