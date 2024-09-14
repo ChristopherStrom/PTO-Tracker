@@ -64,18 +64,22 @@ def workdays(start_date, end_date):
     return day_count
 
 def calculate_earned_pto(start_period, end_period, total_annual_pto=64):
-    """Calculates earned PTO based on the start period and end period or current date."""
-    current_date = end_period if end_period else datetime.today().date()
-    
-    # Total workdays in the start-to-end period
-    total_workdays_in_period = workdays(start_period, current_date)
-    
-    # Total workdays in a year (for PTO accrual rate)
-    total_workdays_in_year = workdays(date(current_date.year, 1, 1), date(current_date.year, 12, 31))
-    pto_rate_per_day = total_annual_pto / total_workdays_in_year
-    
-    # Calculate earned PTO for the period
-    earned_pto = pto_rate_per_day * total_workdays_in_period
+    """Calculates earned PTO based on the start period and end period."""
+    current_date = datetime.today().date()
+
+    # If the end period is set and it's before the current date, use end period as current date
+    if end_period and end_period < current_date:
+        current_date = end_period
+
+    # Total workdays in the entire period (start_period to end_period)
+    total_workdays_in_period = workdays(start_period, end_period)
+
+    # Total workdays passed from start_period to current_date
+    workdays_passed = workdays(start_period, current_date)
+
+    # Calculate earned PTO based on proportion of workdays passed
+    earned_pto = (workdays_passed / total_workdays_in_period) * total_annual_pto
     return round(earned_pto, 2)
+
 
 
