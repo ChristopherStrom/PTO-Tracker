@@ -183,6 +183,9 @@ def view_user():
     emergency_total = initial_emergency_total - used_emergency_hours
     vacation_total = initial_vacation_total - used_vacation_hours
 
+    # Calculate earned PTO time using start and end periods
+    earned_pto = calculate_earned_pto(user.start_period, user.end_period)
+    
     # Determine all years present in the user's time off history
     years = db.session.query(func.extract('year', TimeOff.date)).filter_by(user_id=user_id).group_by(func.extract('year', TimeOff.date)).all()
     years = [int(y[0]) for y in years]
@@ -235,9 +238,10 @@ def view_user():
         emergency_total=emergency_total, 
         initial_vacation_total=initial_vacation_total, 
         used_vacation_hours=used_vacation_hours, 
-        vacation_total=vacation_total, 
+        vacation_total=vacation_total,
+        earned_pto=earned_pto,
         all_users=all_users, 
-        notes=notes
+        notes=notes,
     )
 
 @app.route('/dashboard_pdf')
