@@ -25,6 +25,7 @@
             <li class="list-group-item"><strong>End Period:</strong> {{ user.end_period or 'N/A' }}</li>
             <li class="list-group-item"><strong>PTO Hours:</strong> 
                 <ul>
+                    <li>Earned PTO: {{ earned_pto }} hours</li>
                     <li>Initial: {{ initial_pto_total }}</li>
                     <li>Used: {{ used_pto_hours }}</li>
                     <li>Remaining: {{ pto_total }}</li>
